@@ -1,0 +1,115 @@
+---
+import { getPosts } from '../../lib/strapi';
+import BaseHead from '../../components/BaseHead.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { SITE_TITLE } from '../../consts';
+
+export async function getStaticPaths() {
+	const posts = await getPosts();
+	return posts.map((post) => ({
+		params: { slug: post.Titulo.toLowerCase().replace(/\s+/g, '-') },
+		props: { post }
+	}));
+}
+
+const { post } = Astro.props;
+const title = post.Titulo;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={`${title} | ${SITE_TITLE}`} description={post.Categoria} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<article>
+				<h1>{post.Titulo}</h1>
+				<p class="meta">
+					<span class="category">{post.Categoria}</span>
+					<span class="date">{new Date(post.Publicado).toLocaleDateString('es-ES')}</span>
+				</p>
+				
+				{post.Encabezado?.[0]?.children?.[0]?.text && (
+					<div class="intro">
+						{post.Encabezado[0].children[0].text}
+					</div>
+				)}
+
+				{post.blocks?.map((block: any) => (
+					<section class="block">
+						{block.Cuerpo1 && (
+							<p>{block.Cuerpo1}</p>
+						)}
+						
+						{block.Media1?.url && (
+							<img src={`http://localhost:1337${block.Media1.url}`} alt={title} />
+						)}
+						
+						{block.Cuerpo2 && (
+							<p>{block.Cuerpo2}</p>
+						)}
+						
+						{block.Media2?.url && (
+							<img src={`http://localhost:1337${block.Media2.url}`} alt={title} />
+						)}
+					</section>
+				))}
+			</article>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	main {
+		max-width: 960px;
+		margin: 0 auto;
+		padding: 2rem;
+	}
+	article {
+		line-height: 1.8;
+	}
+	h1 {
+		font-size: 2.5rem;
+		margin-bottom: 1rem;
+		color: #1a1a1a;
+	}
+	.meta {
+		display: flex;
+		gap: 1rem;
+		margin-bottom: 2rem;
+		color: #666;
+		font-size: 0.95rem;
+	}
+	.category {
+		background-color: #f0f0f0;
+		padding: 0.25rem 0.75rem;
+		border-radius: 20px;
+		font-weight: 500;
+	}
+	.intro {
+		font-size: 1.2rem;
+		font-weight: 500;
+		margin-bottom: 2rem;
+		padding: 1.5rem;
+		background-color: #f9f9f9;
+		border-left: 4px solid #007bff;
+	}
+	.block {
+		margin-bottom: 2rem;
+	}
+	.block p {
+		margin-bottom: 1rem;
+		color: #333;
+	}
+	img {
+		max-width: 100%;
+		height: auto;
+		margin: 2rem 0;
+		border-radius: 8px;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	}
+</style>
