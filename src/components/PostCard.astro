@@ -1,0 +1,94 @@
+---
+import FormattedDate from './FormattedDate.astro';
+
+const { post } = Astro.props;
+
+function imageUrl(media: any) {
+  if (!media) return null;
+  if (typeof media === 'string') {
+    const trimmed = media.trim();
+    if (!trimmed) return null;
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+    return `http://localhost:1337${trimmed.startsWith('/') ? '' : '/'}${trimmed}`;
+  }
+  if (media?.data?.attributes?.url) {
+    const url = media.data.attributes.url;
+    return url.startsWith('http') ? url : `http://localhost:1337${url}`;
+  }
+  if (media?.attributes?.url) {
+    const url = media.attributes.url;
+    return url.startsWith('http') ? url : `http://localhost:1337${url}`;
+  }
+  if (media?.url) {
+    const url = media.url;
+    return url.startsWith('http') ? url : `http://localhost:1337${url}`;
+  }
+  return null;
+}
+
+function slugFromTitle(title: string) {
+  return title
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-');
+}
+
+function getPostExcerpt(encabezado: any): string {
+  if (!encabezado) return '';
+
+  if (typeof encabezado === 'string') {
+    return encabezado.trim();
+  }
+
+  if (!Array.isArray(encabezado)) {
+    return '';
+  }
+
+  const text = encabezado
+    .flatMap((block: any) => {
+      if (typeof block?.children === 'string') {
+        return [block.children];
+      }
+      if (Array.isArray(block?.children)) {
+        return block.children
+          .map((child: any) => (typeof child?.text === 'string' ? child.text : ''))
+          .filter(Boolean);
+      }
+      return [];
+    })
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return text;
+}
+
+const title = typeof post?.Titulo === 'string' ? post.Titulo.trim() : '';
+const slug = title ? slugFromTitle(title) : '';
+const coverUrl = imageUrl(post?.Portada || post?.cover || post?.image);
+const media1Url = imageUrl(post?.Media1 || post?.blocks?.[0]?.Media1);
+const image = coverUrl || media1Url;
+const excerpt = getPostExcerpt(post?.Encabezado);
+const publishedDate = post?.Publicado ? new Date(post.Publicado) : null;
+const hasValidDate = publishedDate && !Number.isNaN(publishedDate.valueOf());
+---
+
+{title && slug && (
+  <li class="post-card">
+    <a class="post-card-link" href={`/blog/${slug}/`}>
+      {image && <img class="post-thumb" src={image} alt={title} loading="lazy" />}
+      <div class="post-content">
+        <h3 class="post-title">{title}</h3>
+        {excerpt && <p class="post-excerpt">{excerpt}</p>}
+        {hasValidDate && (
+          <p class="post-date">
+            <FormattedDate date={publishedDate as Date} />
+          </p>
+        )}
+      </div>
+    </a>
+  </li>
+)}

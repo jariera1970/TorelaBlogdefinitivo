@@ -2,37 +2,14 @@
 import { getPosts } from '../../lib/strapi';
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
-import FormattedDate from '../../components/FormattedDate.astro';
+import PostCard from '../../components/PostCard.astro';
 import Header from '../../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
 
 export const prerender = false;
 
 const allPosts = await getPosts();
-const posts = allPosts.filter((post) => post.Categoria === 'Toros' && post.Titulo);
-
-function imageUrl(media) {
-if (!media) return null;
-if (typeof media === 'string') {
-const trimmed = media.trim();
-if (!trimmed) return null;
-if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
-return `http://localhost:1337${trimmed.startsWith('/') ? '' : '/'}${trimmed}`;
-}
-if (media?.data?.attributes?.url) {
-const url = media.data.attributes.url;
-return url.startsWith('http') ? url : `http://localhost:1337${url}`;
-}
-if (media?.attributes?.url) {
-const url = media.attributes.url;
-return url.startsWith('http') ? url : `http://localhost:1337${url}`;
-}
-if (media?.url) {
-const url = media.url;
-return url.startsWith('http') ? url : `http://localhost:1337${url}`;
-}
-return null;
-}
+const posts = allPosts.filter((post: any) => post.Categoria === 'Toros' && post.Titulo);
 ---
 
 <!doctype html>
@@ -44,24 +21,14 @@ return null;
 <Header />
 <main>
 <section>
-<ul>
-{posts.map((post) => {
-const coverUrl = imageUrl(post.Portada || post.cover || post.image);
-const media1Url = imageUrl(post.Media1 || post.blocks?.[0]?.Media1);
-const image = coverUrl || media1Url;
-return (
-<li>
-<a href={`/blog/${post.Titulo.toLowerCase().replace(/\s+/g, '-')}/`}>
-{image && <img src={image} alt={post.Titulo} />}
-<h4 class="title">{post.Titulo}</h4>
-<p class="date"><FormattedDate date={new Date(post.Publicado)} /></p>
-</a>
-</li>
-);
-})}
+<ul class="post-list">
+{posts.map((post: any) => (
+<PostCard post={post} />
+))}
 </ul>
 </section>
 </main>
 <Footer />
 </body>
 </html>
+

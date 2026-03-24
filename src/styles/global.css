@@ -153,3 +153,77 @@ hr {
 	/* added line to stop words getting smushed together (as they go onto separate lines and some screen readers do not understand line feeds as a space */
 	white-space: nowrap;
 }
+
+.post-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: grid;
+	gap: 1.3rem;
+}
+
+.post-card {
+	border-top: 1px solid rgb(var(--gray-light));
+	padding-top: 1.2rem;
+}
+
+.post-card:first-child {
+	border-top: 0;
+	padding-top: 0;
+}
+
+.post-card-link {
+	display: grid;
+	grid-template-columns: 210px 1fr;
+	gap: 1.1rem;
+	text-decoration: none;
+	color: inherit;
+	align-items: start;
+}
+
+.post-thumb {
+	width: 100%;
+	aspect-ratio: 4 / 3;
+	object-fit: cover;
+	border-radius: 4px;
+	box-shadow: 0 2px 10px rgba(var(--gray), 0.18);
+}
+
+.post-content {
+	display: grid;
+	gap: 0.45rem;
+}
+
+.post-title {
+	font-size: 2rem;
+	line-height: 1.15;
+	color: #1f6fa8;
+	margin: 0;
+}
+
+.post-excerpt {
+	margin: 0;
+	font-size: 1.2rem;
+	line-height: 1.5;
+	color: rgb(var(--gray-dark));
+	display: -webkit-box;
+	-webkit-line-clamp: 4;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.post-date {
+	margin: 0;
+	font-size: 0.95rem;
+	color: rgb(var(--gray));
+}
+
+@media (max-width: 720px) {
+	.post-card-link {
+		grid-template-columns: 1fr;
+	}
+
+	.post-title {
+		font-size: 1.55rem;
+	}
+}
