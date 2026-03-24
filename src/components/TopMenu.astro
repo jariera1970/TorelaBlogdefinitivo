@@ -1,0 +1,40 @@
+---
+const { categories, active } = Astro.props;
+---
+<nav class="top-menu">
+	<ul>
+		<li class={active === 'home' ? 'active' : ''}><a href="/">Inicio</a></li>
+		{categories.map((c) => (
+			<li class={active === c.slug ? 'active' : ''}>
+				<a href={`/category/${c.slug}/`}>{c.name}</a>
+			</li>
+		))}
+	</ul>
+</nav>
+<style>
+	.top-menu {
+		background: #222;
+		color: #fff;
+		padding: 0.5rem;
+	}
+	.top-menu ul {
+		display: flex;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		gap: 0.5rem;
+	}
+	.top-menu li {
+		margin: 0;
+	}
+	.top-menu a {
+		color: #fff;
+		text-decoration: none;
+		padding: 0.5rem 0.75rem;
+		display: block;
+	}
+	.top-menu .active a {
+		background: #0077c2;
+		border-radius: 4px;
+	}
+</style>
