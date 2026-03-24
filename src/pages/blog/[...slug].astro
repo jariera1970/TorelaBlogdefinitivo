@@ -1,6 +1,8 @@
 ---
 import { getPosts } from '../../lib/strapi';
 import BaseHead from '../../components/BaseHead.astro';
+
+export const prerender = false;
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import { SITE_TITLE } from '../../consts';
@@ -8,12 +10,44 @@ import { SITE_TITLE } from '../../consts';
 export async function getStaticPaths() {
 	const posts = await getPosts();
 	return posts.map((post) => ({
-		params: { slug: post.Titulo.toLowerCase().replace(/\s+/g, '-') },
-		props: { post }
+		params: { slug: post.Titulo.toLowerCase().replace(/\s+/g, '-') }
 	}));
 }
 
-const { post } = Astro.props;
+const STRAPI_URL = 'http://localhost:1337';
+
+function getStrapiImageUrl(media) {
+	if (!media) return null;
+	if (typeof media === 'string') {
+		const trimmed = media.trim();
+		if (!trimmed) return null;
+		return trimmed.startsWith('http://') || trimmed.startsWith('https://')
+			? trimmed
+			: `${STRAPI_URL}${trimmed.startsWith('/') ? '' : '/'}${trimmed}`;
+	}
+	if (media?.data?.attributes?.url) {
+		const url = media.data.attributes.url;
+		return url.startsWith('http') ? url : `${STRAPI_URL}${url}`;
+	}
+	if (media?.attributes?.url) {
+		const url = media.attributes.url;
+		return url.startsWith('http') ? url : `${STRAPI_URL}${url}`;
+	}
+	if (media?.url) {
+		const url = media.url;
+		return url.startsWith('http') ? url : `${STRAPI_URL}${url}`;
+	}
+	return null;
+}
+
+const slug = Astro.params.slug;
+const posts = await getPosts();
+const post = posts.find((p) => p.Titulo.toLowerCase().replace(/\s+/g, '-') === slug);
+
+if (!post) {
+	throw new Error(`Post no encontrado: ${slug}`);
+}
+
 const title = post.Titulo;
 ---
 
@@ -38,25 +72,29 @@ const title = post.Titulo;
 					</div>
 				)}
 
-				{post.blocks?.map((block: any) => (
-					<section class="block">
-						{block.Cuerpo1 && (
-							<p>{block.Cuerpo1}</p>
-						)}
-						
-						{block.Media1?.url && (
-							<img src={`http://localhost:1337${block.Media1.url}`} alt={title} />
-						)}
-						
-						{block.Cuerpo2 && (
-							<p>{block.Cuerpo2}</p>
-						)}
-						
-						{block.Media2?.url && (
-							<img src={`http://localhost:1337${block.Media2.url}`} alt={title} />
-						)}
-					</section>
-				))}
+				{post.blocks?.map((block: any) => {
+					const media1Url = getStrapiImageUrl(block.Media1);
+					const media2Url = getStrapiImageUrl(block.Media2);
+					return (
+						<section class="block">
+							{block.Cuerpo1 && (
+								<p>{block.Cuerpo1}</p>
+							)}
+							
+							{media1Url && (
+								<img src={media1Url} alt={title} />
+							)}
+							
+							{block.Cuerpo2 && (
+								<p>{block.Cuerpo2}</p>
+							)}
+							
+							{media2Url && (
+								<img src={media2Url} alt={title} />
+							)}
+						</section>
+					);
+				})}
 			</article>
 		</main>
 		<Footer />
