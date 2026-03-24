@@ -10,7 +10,7 @@ export const prerender = false;
 
 const posts = await getPosts();
 
-function imageUrl(media) {
+function imageUrl(media: any) {
 if (!media) return null;
 if (typeof media === 'string') {
 const trimmed = media.trim();
@@ -44,7 +44,7 @@ return null;
 <main>
 <section>
 <ul>
-{posts.map((post) => {
+{posts.map((post: any) => {
 const coverUrl = imageUrl(post.Portada || post.cover || post.image);
 const media1Url = imageUrl(post.Media1 || post.blocks?.[0]?.Media1);
 const image = coverUrl || media1Url;
