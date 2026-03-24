@@ -4,12 +4,25 @@ import HeaderLink from './HeaderLink.astro';
 ---
 
 <header>
+	<div class="header-banner">
+		<img src="/TorelaFoto.jpg" alt="Torela" loading="lazy" />
+	</div>
 	<nav>
 		<h2><a href="/">{SITE_TITLE}</a></h2>
 		<div class="internal-links">
 			<HeaderLink href="/">Home</HeaderLink>
-			<HeaderLink href="/blog">Blog</HeaderLink>
-			<HeaderLink href="/about">About</HeaderLink>
+			<HeaderLink href="/noticias">Noticias</HeaderLink>
+			<HeaderLink href="/tradiciones">Tradiciones</HeaderLink>
+			<HeaderLink href="/cultura">Cultura</HeaderLink>
+			<HeaderLink href="/deportes">Deportes</HeaderLink>
+			<HeaderLink href="/politica">Política</HeaderLink>
+			<HeaderLink href="/humor">Humor</HeaderLink>
+			<HeaderLink href="/agricultura">Agricultura</HeaderLink>
+			<HeaderLink href="/toros">Toros</HeaderLink>
+			<HeaderLink href="/hace-30-anos">Hace 30 años</HeaderLink>
+			<HeaderLink href="/el-pueblo">El pueblo</HeaderLink>
+			<HeaderLink href="/enlaces">Enlaces</HeaderLink>
+			<HeaderLink href="/asociacion">Asociacion</HeaderLink>
 		</div>
 		<div class="social-links">
 			<a href="https://m.webtoo.ls/@astro" target="_blank">
@@ -45,9 +58,8 @@ import HeaderLink from './HeaderLink.astro';
 <style>
 	header {
 		margin: 0;
-		padding: 0 1em;
+		padding: 0;
 		background: white;
-		box-shadow: 0 2px 8px rgba(var(--black), 5%);
 	}
 	h2 {
 		margin: 0;
@@ -62,6 +74,9 @@ import HeaderLink from './HeaderLink.astro';
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
+		padding: 0 1em;
+		background: white;
+		box-shadow: 0 2px 8px rgba(var(--black), 5%);
 	}
 	nav a {
 		padding: 1em 0.5em;
@@ -80,6 +95,42 @@ import HeaderLink from './HeaderLink.astro';
 	@media (max-width: 720px) {
 		.social-links {
 			display: none;
+		}
+	}
+
+	.header-banner {
+		width: 100%;
+		overflow: visible;
+		position: relative;
+	}
+
+	.header-banner img {
+		width: 100%;
+		height: auto;
+		display: block;
+		object-fit: contain;
+	}
+
+	nav {
+		position: sticky;
+		top: 0;
+		z-index: 1000;
+	}
+
+	.internal-links {
+		display: flex;
+		flex-wrap: wrap;
+	}
+
+	@media (max-width: 900px) {
+		nav {
+			gap: 0.5rem;
+			align-items: flex-start;
+			flex-direction: column;
+		}
+
+		.internal-links {
+			row-gap: 0.25rem;
 		}
 	}
 </style>

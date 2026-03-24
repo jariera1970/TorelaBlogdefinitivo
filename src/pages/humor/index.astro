@@ -1,14 +1,15 @@
 ---
-import { getPosts } from '../lib/strapi';
-import BaseHead from '../components/BaseHead.astro';
-import Footer from '../components/Footer.astro';
-import FormattedDate from '../components/FormattedDate.astro';
-import Header from '../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { getPosts } from '../../lib/strapi';
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+import Header from '../../components/Header.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
 
 export const prerender = false;
 
-const posts = await getPosts();
+const allPosts = await getPosts();
+const posts = allPosts.filter((post) => post.Categoria === 'Humor');
 
 function imageUrl(media) {
 if (!media) return null;
