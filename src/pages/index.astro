@@ -44,7 +44,7 @@ return null;
 <main>
 <section>
 <ul>
-{posts.map((post: any) => {
+{posts.filter((post: any) => post.Titulo).map((post: any) => {
 const coverUrl = imageUrl(post.Portada || post.cover || post.image);
 const media1Url = imageUrl(post.Media1 || post.blocks?.[0]?.Media1);
 const image = coverUrl || media1Url;

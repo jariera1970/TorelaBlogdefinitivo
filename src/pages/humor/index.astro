@@ -9,7 +9,7 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
 export const prerender = false;
 
 const allPosts = await getPosts();
-const posts = allPosts.filter((post) => post.Categoria === 'Humor');
+const posts = allPosts.filter((post) => post.Categoria === 'Humor' && post.Titulo);
 
 function imageUrl(media) {
 if (!media) return null;

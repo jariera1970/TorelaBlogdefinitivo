@@ -6,10 +6,7 @@ export async function getPosts() {
     return [];
   }
 
-  return data.data.map((item) => ({
-    id: item.id,
-    ...item.attributes,
-  }));
+  return data.data.map((item) => item);
 }
 
 export function sortPosts(posts) {
