@@ -7,16 +7,26 @@ import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import { SITE_TITLE } from '../../consts';
 
+function slugFromTitle(title: string) {
+	return title
+		.toLowerCase()
+		.normalize('NFD')
+		.replace(/[\u0300-\u036f]/g, '')
+		.replace(/[^a-z0-9\s-]/g, '')
+		.trim()
+		.replace(/\s+/g, '-');
+}
+
 export async function getStaticPaths() {
 	const posts = await getPosts();
-	return posts.map((post) => ({
-		params: { slug: post.Titulo.toLowerCase().replace(/\s+/g, '-') }
+	return posts.map((post: any) => ({
+		params: { slug: slugFromTitle(post.Titulo) }
 	}));
 }
 
 const STRAPI_URL = 'http://localhost:1337';
 
-function getStrapiImageUrl(media) {
+function getStrapiImageUrl(media: any) {
 	if (!media) return null;
 	if (typeof media === 'string') {
 		const trimmed = media.trim();
@@ -40,9 +50,9 @@ function getStrapiImageUrl(media) {
 	return null;
 }
 
-const slug = Astro.params.slug;
+const slug = (Astro.params as { slug?: string }).slug;
 const posts = await getPosts();
-const post = posts.find((p) => p.Titulo.toLowerCase().replace(/\s+/g, '-') === slug);
+const post = posts.find((p: any) => slugFromTitle(p.Titulo) === slug);
 
 if (!post) {
 	throw new Error(`Post no encontrado: ${slug}`);
