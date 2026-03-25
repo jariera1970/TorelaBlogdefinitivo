@@ -1,0 +1,3 @@
+[submodule "stablo-astro"]
+	path = stablo-astro
+	url = https://github.com/web3templates/stablo-astro.git
