@@ -5,24 +5,43 @@ const { post } = Astro.props;
 
 function imageUrl(media: any) {
   if (!media) return null;
+
   if (typeof media === 'string') {
     const trimmed = media.trim();
     if (!trimmed) return null;
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+    if (trimmed.startsWith('//')) return `https:${trimmed}`;
     return `http://localhost:1337${trimmed.startsWith('/') ? '' : '/'}${trimmed}`;
   }
-  if (media?.data?.attributes?.url) {
-    const url = media.data.attributes.url;
-    return url.startsWith('http') ? url : `http://localhost:1337${url}`;
+
+  if (Array.isArray(media)) {
+    for (const item of media) {
+      const url = imageUrl(item);
+      if (url) return url;
+    }
+    return null;
   }
-  if (media?.attributes?.url) {
-    const url = media.attributes.url;
-    return url.startsWith('http') ? url : `http://localhost:1337${url}`;
+
+  if (Array.isArray(media?.data)) {
+    return imageUrl(media.data);
   }
-  if (media?.url) {
-    const url = media.url;
-    return url.startsWith('http') ? url : `http://localhost:1337${url}`;
+
+  if (media?.data) {
+    return imageUrl(media.data);
   }
+
+  if (media?.attributes) {
+    return imageUrl(media.attributes);
+  }
+
+  if (typeof media?.url === 'string') {
+    const trimmed = media.url.trim();
+    if (!trimmed) return null;
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+    if (trimmed.startsWith('//')) return `https:${trimmed}`;
+    return `http://localhost:1337${trimmed.startsWith('/') ? '' : '/'}${trimmed}`;
+  }
+
   return null;
 }
 
@@ -66,10 +85,37 @@ function getPostExcerpt(encabezado: any): string {
   return text;
 }
 
+function isVideoMedia(media: any): boolean {
+  if (!media) return false;
+
+  if (Array.isArray(media)) {
+    return media.some((item) => isVideoMedia(item));
+  }
+
+  if (Array.isArray(media?.data)) {
+    return isVideoMedia(media.data);
+  }
+
+  if (media?.data) {
+    return isVideoMedia(media.data);
+  }
+
+  if (media?.attributes) {
+    return isVideoMedia(media.attributes);
+  }
+
+  const mime = media?.mime;
+  if (mime) return (mime as string).startsWith('video/');
+
+  const url = media?.url || (typeof media === 'string' ? media : null);
+  return url ? /\.(mp4|webm|ogg|mov|avi|mkv)(\?.*)?$/i.test(url) : false;
+}
+
 const title = typeof post?.Titulo === 'string' ? post.Titulo.trim() : '';
 const slug = title ? slugFromTitle(title) : '';
 const coverUrl = imageUrl(post?.Portada || post?.cover || post?.image);
-const media1Url = imageUrl(post?.Media1 || post?.blocks?.[0]?.Media1);
+const rawMedia1 = post?.Media1 || post?.blocks?.[0]?.Media1;
+const media1Url = !isVideoMedia(rawMedia1) ? imageUrl(rawMedia1) : null;
 const image = coverUrl || media1Url;
 const excerpt = getPostExcerpt(post?.Encabezado);
 const publishedDate = post?.Publicado ? new Date(post.Publicado) : null;

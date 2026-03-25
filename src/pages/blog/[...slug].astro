@@ -26,28 +26,86 @@ export async function getStaticPaths() {
 
 const STRAPI_URL = 'http://localhost:1337';
 
-function getStrapiImageUrl(media: any) {
-	if (!media) return null;
+function resolveAbsoluteUrl(rawUrl: string): string {
+	if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) return rawUrl;
+	if (rawUrl.startsWith('//')) return `https:${rawUrl}`;
+	if (rawUrl.startsWith('/')) return `${STRAPI_URL}${rawUrl}`;
+	return `${STRAPI_URL}/${rawUrl}`;
+}
+
+function extractMediaAsset(media: any): { rawUrl: string | null; mime: string | null } {
+	if (!media) return { rawUrl: null, mime: null };
+
 	if (typeof media === 'string') {
-		const trimmed = media.trim();
-		if (!trimmed) return null;
-		return trimmed.startsWith('http://') || trimmed.startsWith('https://')
-			? trimmed
-			: `${STRAPI_URL}${trimmed.startsWith('/') ? '' : '/'}${trimmed}`;
+		const raw = media.trim();
+		return { rawUrl: raw || null, mime: null };
 	}
-	if (media?.data?.attributes?.url) {
-		const url = media.data.attributes.url;
-		return url.startsWith('http') ? url : `${STRAPI_URL}${url}`;
+
+	if (Array.isArray(media)) {
+		for (const item of media) {
+			const result = extractMediaAsset(item);
+			if (result.rawUrl) return result;
+		}
+		return { rawUrl: null, mime: null };
 	}
-	if (media?.attributes?.url) {
-		const url = media.attributes.url;
-		return url.startsWith('http') ? url : `${STRAPI_URL}${url}`;
+
+	if (Array.isArray(media?.data)) {
+		return extractMediaAsset(media.data);
 	}
-	if (media?.url) {
-		const url = media.url;
-		return url.startsWith('http') ? url : `${STRAPI_URL}${url}`;
+
+	if (media?.data) {
+		return extractMediaAsset(media.data);
 	}
-	return null;
+
+	if (media?.attributes) {
+		return extractMediaAsset(media.attributes);
+	}
+
+	if (typeof media?.url === 'string' && media.url.trim()) {
+		return {
+			rawUrl: media.url.trim(),
+			mime: typeof media?.mime === 'string' ? media.mime : null
+		};
+	}
+
+	if (typeof media?.src === 'string' && media.src.trim()) {
+		return {
+			rawUrl: media.src.trim(),
+			mime: typeof media?.mime === 'string' ? media.mime : null
+		};
+	}
+
+	return { rawUrl: null, mime: typeof media?.mime === 'string' ? media.mime : null };
+}
+
+function getStrapiMediaInfo(media: any): { url: string | null; isVideo: boolean; isEmbed: boolean } {
+	const { rawUrl, mime } = extractMediaAsset(media);
+	if (!rawUrl) return { url: null, isVideo: false, isEmbed: false };
+
+	const url = resolveAbsoluteUrl(rawUrl);
+
+	if (/odysee\.com\//i.test(url)) {
+		const embedUrl = url.includes('/$/embed/') ? url : url.replace('odysee.com/', 'odysee.com/$/embed/');
+		return { url: embedUrl, isVideo: true, isEmbed: true };
+	}
+
+	const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/i);
+	if (ytMatch) {
+		return { url: `https://www.youtube.com/embed/${ytMatch[1]}`, isVideo: true, isEmbed: true };
+	}
+	if (/youtube\.com\/embed\//i.test(url)) {
+		return { url, isVideo: true, isEmbed: true };
+	}
+
+	const vimeoMatch = url.match(/vimeo\.com\/(\d+)/i);
+	if (vimeoMatch) {
+		return { url: `https://player.vimeo.com/video/${vimeoMatch[1]}`, isVideo: true, isEmbed: true };
+	}
+
+	const isVideoByMime = typeof mime === 'string' ? mime.startsWith('video/') : false;
+	const isVideoByExt = /\.(mp4|webm|ogg|mov|avi|mkv)(\?.*)?$/i.test(url);
+
+	return { url, isVideo: isVideoByMime || isVideoByExt, isEmbed: false };
 }
 
 const slug = (Astro.params as { slug?: string }).slug;
@@ -83,24 +141,32 @@ const title = post.Titulo;
 				)}
 
 				{post.blocks?.map((block: any) => {
-					const media1Url = getStrapiImageUrl(block.Media1);
-					const media2Url = getStrapiImageUrl(block.Media2);
+					const media1 = getStrapiMediaInfo(block.Media1);
+					const media2 = getStrapiMediaInfo(block.Media2);
 					return (
 						<section class="block">
 							{block.Cuerpo1 && (
 								<p>{block.Cuerpo1}</p>
 							)}
-							
-							{media1Url && (
-								<img src={media1Url} alt={title} />
+
+							{media1.url && (
+								media1.isEmbed
+									? <iframe src={media1.url} class="block-media-embed" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" />
+									: media1.isVideo
+									? <video src={media1.url} controls class="block-media" />
+									: <img src={media1.url} alt={title} class="block-media" />
 							)}
-							
+
 							{block.Cuerpo2 && (
 								<p>{block.Cuerpo2}</p>
 							)}
-							
-							{media2Url && (
-								<img src={media2Url} alt={title} />
+
+							{media2.url && (
+								media2.isEmbed
+									? <iframe src={media2.url} class="block-media-embed" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" />
+									: media2.isVideo
+									? <video src={media2.url} controls class="block-media" />
+									: <img src={media2.url} alt={title} class="block-media" />
 							)}
 						</section>
 					);
@@ -153,11 +219,21 @@ const title = post.Titulo;
 		margin-bottom: 1rem;
 		color: #333;
 	}
-	img {
+	.block-media {
 		max-width: 100%;
 		height: auto;
 		margin: 2rem 0;
 		border-radius: 8px;
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+		display: block;
+	}
+	.block-media-embed {
+		width: 100%;
+		aspect-ratio: 16 / 9;
+		margin: 2rem 0;
+		border-radius: 8px;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+		border: none;
+		display: block;
 	}
 </style>
