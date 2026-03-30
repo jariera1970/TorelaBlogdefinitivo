@@ -10,7 +10,29 @@ export const prerender = false;
 
 const posts = await getPosts();
 
-function imageUrl(media) {
+function slugFromTitle(title: string) {
+return title
+.toLowerCase()
+.normalize('NFD')
+.replace(/[\u0300-\u036f]/g, '')
+.replace(/[^a-z0-9\s-]/g, '')
+.trim()
+.replace(/\s+/g, '-');
+}
+
+function uniquePostSlug(post: any): string {
+const base = slugFromTitle(typeof post?.Titulo === 'string' ? post.Titulo : 'post');
+const uniqueId =
+typeof post?.UID === 'string' && post.UID.trim()
+? post.UID.trim()
+: typeof post?.documentId === 'string' && post.documentId.trim()
+? post.documentId.trim()
+: String(post?.id || '');
+
+return uniqueId ? `${base}-${uniqueId.toLowerCase()}` : base;
+}
+
+function imageUrl(media: any) {
 if (!media) return null;
 if (typeof media === 'string') {
 const trimmed = media.trim();
@@ -44,13 +66,13 @@ return null;
 <main>
 <section>
 <ul>
-{posts.map((post) => {
+{posts.map((post: any) => {
 const coverUrl = imageUrl(post.Portada || post.cover || post.image);
 const media1Url = imageUrl(post.Media1 || post.blocks?.[0]?.Media1);
 const image = coverUrl || media1Url;
 return (
 <li>
-<a href={`/blog/${post.Titulo.toLowerCase().replace(/\s+/g, '-')}/`}>
+<a href={`/blog/${uniquePostSlug(post)}/`}>
 {image && <img src={image} alt={post.Titulo} />}
 <h4 class="title">{post.Titulo}</h4>
 <p class="date"><FormattedDate date={new Date(post.Publicado)} /></p>

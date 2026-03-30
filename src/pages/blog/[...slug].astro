@@ -17,10 +17,22 @@ function slugFromTitle(title: string) {
 		.replace(/\s+/g, '-');
 }
 
+function uniquePostSlug(post: any) {
+	const base = slugFromTitle(post?.Titulo || 'post');
+	const uniqueId =
+		typeof post?.UID === 'string' && post.UID.trim()
+			? post.UID.trim()
+			: typeof post?.documentId === 'string' && post.documentId.trim()
+				? post.documentId.trim()
+				: String(post?.id || '');
+
+	return uniqueId ? `${base}-${uniqueId.toLowerCase()}` : base;
+}
+
 export async function getStaticPaths() {
 	const posts = await getPosts();
 	return posts.map((post: any) => ({
-		params: { slug: slugFromTitle(post.Titulo) }
+		params: { slug: uniquePostSlug(post) }
 	}));
 }
 
@@ -110,7 +122,8 @@ function getStrapiMediaInfo(media: any): { url: string | null; isVideo: boolean;
 
 const slug = (Astro.params as { slug?: string }).slug;
 const posts = await getPosts();
-const post = posts.find((p: any) => slugFromTitle(p.Titulo) === slug);
+const post = posts.find((p: any) => uniquePostSlug(p) === slug)
+	|| posts.find((p: any) => slugFromTitle(p.Titulo) === slug);
 
 if (!post) {
 	throw new Error(`Post no encontrado: ${slug}`);

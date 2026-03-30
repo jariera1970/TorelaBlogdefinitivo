@@ -3,7 +3,7 @@ import FormattedDate from './FormattedDate.astro';
 
 const { post } = Astro.props;
 
-function imageUrl(media: any) {
+function imageUrl(media: any): string | null {
   if (!media) return null;
 
   if (typeof media === 'string') {
@@ -16,7 +16,7 @@ function imageUrl(media: any) {
 
   if (Array.isArray(media)) {
     for (const item of media) {
-      const url = imageUrl(item);
+      const url: string | null = imageUrl(item);
       if (url) return url;
     }
     return null;
@@ -53,6 +53,18 @@ function slugFromTitle(title: string) {
     .replace(/[^a-z0-9\s-]/g, '')
     .trim()
     .replace(/\s+/g, '-');
+}
+
+function uniquePostSlug(post: any): string {
+  const base = slugFromTitle(typeof post?.Titulo === 'string' ? post.Titulo : 'post');
+  const uniqueId =
+    typeof post?.UID === 'string' && post.UID.trim()
+      ? post.UID.trim()
+      : typeof post?.documentId === 'string' && post.documentId.trim()
+      ? post.documentId.trim()
+      : String(post?.id || '');
+
+  return uniqueId ? `${base}-${uniqueId.toLowerCase()}` : base;
 }
 
 function getPostExcerpt(encabezado: any): string {
@@ -112,7 +124,7 @@ function isVideoMedia(media: any): boolean {
 }
 
 const title = typeof post?.Titulo === 'string' ? post.Titulo.trim() : '';
-const slug = title ? slugFromTitle(title) : '';
+const slug = title ? uniquePostSlug(post) : '';
 const coverUrl = imageUrl(post?.Portada || post?.cover || post?.image);
 const rawMedia1 = post?.Media1 || post?.blocks?.[0]?.Media1;
 const media1Url = !isVideoMedia(rawMedia1) ? imageUrl(rawMedia1) : null;
