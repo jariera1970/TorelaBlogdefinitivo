@@ -2,7 +2,6 @@
 import { getPosts, toAbsoluteStrapiUrl } from '../../lib/strapi';
 import BaseHead from '../../components/BaseHead.astro';
 
-export const prerender = false;
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import { SITE_TITLE } from '../../consts';
@@ -32,7 +31,24 @@ function uniquePostSlug(post: any) {
 export async function getStaticPaths() {
 	const posts = await getPosts();
 	return posts.map((post: any) => ({
-		params: { slug: uniquePostSlug(post) }
+		params: {
+			slug: (() => {
+				const base = String(post?.Titulo || 'post')
+					.toLowerCase()
+					.normalize('NFD')
+					.replace(/[\u0300-\u036f]/g, '')
+					.replace(/[^a-z0-9\s-]/g, '')
+					.trim()
+					.replace(/\s+/g, '-');
+				const uniqueId =
+					typeof post?.UID === 'string' && post.UID.trim()
+						? post.UID.trim()
+						: typeof post?.documentId === 'string' && post.documentId.trim()
+							? post.documentId.trim()
+							: String(post?.id || '');
+				return uniqueId ? `${base}-${uniqueId.toLowerCase()}` : base;
+			})(),
+		}
 	}));
 }
 

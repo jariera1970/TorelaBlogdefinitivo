@@ -6,7 +6,6 @@ import PostCard from '../components/PostCard.astro';
 import Header from '../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 
-export const prerender = false;
 
 const posts = sortPosts((await getPosts()).filter((post: any) => post.Titulo)).slice(0, 10);
 ---

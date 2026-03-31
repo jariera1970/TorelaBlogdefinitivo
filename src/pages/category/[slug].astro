@@ -4,22 +4,47 @@ import TopMenu from '../../components/TopMenu.astro';
 import Footer from '../../components/Footer.astro';
 import Header from '../../components/Header.astro';
 
-export const prerender = false;
+export async function getStaticPaths() {
+	const allPosts = sortPosts(await getPosts());
+	const categories = (Array.from(new Set(allPosts.map((post: any) => post.Categoria || 'Sin categoria'))) as string[])
+		.map((name) => ({
+			name,
+			slug: name.toLowerCase().replace(/\s+/g, '-'),
+		}));
+
+	return categories.map((category: { name: string; slug: string }) => {
+		const posts = allPosts.filter((post: any) => {
+			const postCat = (post.Categoria || 'Sin categoria').toLowerCase().replace(/\s+/g, '-');
+			return postCat === category.slug;
+		});
+
+		return {
+			params: { slug: category.slug },
+			props: {
+				categories,
+				categorySlug: category.slug,
+				categoryName: category.name,
+				posts,
+			},
+		};
+	});
+}
 
 const allPosts = sortPosts(await getPosts());
-const categories = Array.from(new Set(allPosts.map((post) => post.Categoria || 'Sin categoría')))
+const categories = (Array.from(new Set(allPosts.map((post: any) => post.Categoria || 'Sin categoría'))) as string[])
 	.map((name) => ({
 		name,
 		slug: name.toLowerCase().replace(/\s+/g, '-'),
 	}));
 
-const categorySlug = Astro.params.slug;
-const categoryName = categories.find((c) => c.slug === categorySlug)?.name || 'Sin categoría';
-
-const posts = allPosts.filter((post) => {
-	const postCat = (post.Categoria || 'Sin categoría').toLowerCase().replace(/\s+/g, '-');
-	return postCat === categorySlug;
-});
+const { categories: categoriesFromProps, categorySlug, categoryName, posts } = Astro.props as {
+	categories?: Array<{ name: string; slug: string }>;
+	categorySlug?: string;
+	categoryName?: string;
+	posts?: any[];
+};
+const categoriesToRender = categoriesFromProps || categories;
+const postsToRender = posts || [];
 ---
 
 <!DOCTYPE html>
@@ -31,16 +56,16 @@ const posts = allPosts.filter((post) => {
 	</head>
 	<body>
 		<Header />
-		<TopMenu categories={categories} active={categorySlug} />
+		<TopMenu categories={categoriesToRender} active={categorySlug} />
 		<main>
 			<section>
 				<h1>{categoryName}</h1>
-				{posts.length === 0 ? (
+				{postsToRender.length === 0 ? (
 					<p>No hay artículos en esta categoría aún.</p>
 				) : (
 					<ul>
-						{posts.map((post) => (
-							<li key={post.id} style="margin-bottom:1rem;">
+						{postsToRender.map((post) => (
+							<li style="margin-bottom:1rem;">
 								<h3>{post.Titulo}</h3>
 								<time>{new Date(post.Publicado).toLocaleDateString('es-ES')}</time>
 								<p>{post.Encabezado?.[0]?.children?.[0]?.text || ''}</p>

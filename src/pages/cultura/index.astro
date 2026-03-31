@@ -6,7 +6,6 @@ import PostCard from '../../components/PostCard.astro';
 import Header from '../../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
 
-export const prerender = false;
 
 const allPosts = await getPosts();
 const posts = allPosts.filter((post: any) => post.Categoria === 'Cultura' && post.Titulo);
