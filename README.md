@@ -53,6 +53,23 @@ All commands are run from the root of the project, from a terminal:
 | `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
 | `npm run astro -- --help` | Get help using the Astro CLI                     |
 
+## Environment
+
+This project reads Strapi from `PUBLIC_STRAPI_URL`.
+
+- Local development default: `http://localhost:1337`
+- Production fallback: `https://strapi-blog-torela.onrender.com`
+
+Create a local env file from `.env.example` if you want to override defaults:
+
+```sh
+copy .env.example .env
+```
+
+For Vercel, set this project environment variable:
+
+- `PUBLIC_STRAPI_URL=https://strapi-blog-torela.onrender.com`
+
 ## 👀 Want to learn more?
 
 Check out [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).

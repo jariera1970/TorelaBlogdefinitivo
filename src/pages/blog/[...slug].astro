@@ -1,5 +1,5 @@
 ---
-import { getPosts } from '../../lib/strapi';
+import { getPosts, toAbsoluteStrapiUrl } from '../../lib/strapi';
 import BaseHead from '../../components/BaseHead.astro';
 
 export const prerender = false;
@@ -36,13 +36,8 @@ export async function getStaticPaths() {
 	}));
 }
 
-const STRAPI_URL = 'http://localhost:1337';
-
 function resolveAbsoluteUrl(rawUrl: string): string {
-	if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) return rawUrl;
-	if (rawUrl.startsWith('//')) return `https:${rawUrl}`;
-	if (rawUrl.startsWith('/')) return `${STRAPI_URL}${rawUrl}`;
-	return `${STRAPI_URL}/${rawUrl}`;
+	return toAbsoluteStrapiUrl(rawUrl);
 }
 
 function extractMediaAsset(media: any): { rawUrl: string | null; mime: string | null } {

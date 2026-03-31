@@ -1,5 +1,6 @@
 ---
 import FormattedDate from './FormattedDate.astro';
+import { toAbsoluteStrapiUrl } from '../lib/strapi';
 
 const { post } = Astro.props;
 
@@ -9,9 +10,7 @@ function imageUrl(media: any): string | null {
   if (typeof media === 'string') {
     const trimmed = media.trim();
     if (!trimmed) return null;
-    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
-    if (trimmed.startsWith('//')) return `https:${trimmed}`;
-    return `http://localhost:1337${trimmed.startsWith('/') ? '' : '/'}${trimmed}`;
+    return toAbsoluteStrapiUrl(trimmed);
   }
 
   if (Array.isArray(media)) {
@@ -37,9 +36,7 @@ function imageUrl(media: any): string | null {
   if (typeof media?.url === 'string') {
     const trimmed = media.url.trim();
     if (!trimmed) return null;
-    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
-    if (trimmed.startsWith('//')) return `https:${trimmed}`;
-    return `http://localhost:1337${trimmed.startsWith('/') ? '' : '/'}${trimmed}`;
+    return toAbsoluteStrapiUrl(trimmed);
   }
 
   return null;

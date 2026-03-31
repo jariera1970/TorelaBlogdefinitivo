@@ -1,5 +1,5 @@
 ﻿---
-import { getPosts } from '../../lib/strapi';
+import { getPosts, toAbsoluteStrapiUrl } from '../../lib/strapi';
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
 import FormattedDate from '../../components/FormattedDate.astro';
@@ -37,20 +37,19 @@ if (!media) return null;
 if (typeof media === 'string') {
 const trimmed = media.trim();
 if (!trimmed) return null;
-if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
-return `http://localhost:1337${trimmed.startsWith('/') ? '' : '/'}${trimmed}`;
+return toAbsoluteStrapiUrl(trimmed);
 }
 if (media?.data?.attributes?.url) {
 const url = media.data.attributes.url;
-return url.startsWith('http') ? url : `http://localhost:1337${url}`;
+return toAbsoluteStrapiUrl(url);
 }
 if (media?.attributes?.url) {
 const url = media.attributes.url;
-return url.startsWith('http') ? url : `http://localhost:1337${url}`;
+return toAbsoluteStrapiUrl(url);
 }
 if (media?.url) {
 const url = media.url;
-return url.startsWith('http') ? url : `http://localhost:1337${url}`;
+return toAbsoluteStrapiUrl(url);
 }
 return null;
 }
