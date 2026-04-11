@@ -6,6 +6,137 @@ import PostCard from '../../components/PostCard.astro';
 import Header from '../../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
 
+const WIKI_PAGE_NAME = 'Tórtola_de_Henares';
+const WIKI_PAGE_ENCODED = encodeURIComponent(WIKI_PAGE_NAME);
+const WIKI_FALLBACK_URL = `https://es.wikipedia.org/wiki/${WIKI_PAGE_ENCODED}`;
+const WIKI_SUMMARY_URL = `https://es.wikipedia.org/api/rest_v1/page/summary/${WIKI_PAGE_ENCODED}`;
+const WIKI_PAGE_META_URL = `https://es.wikipedia.org/w/api.php?action=query&prop=info|revisions&inprop=url&rvprop=timestamp&rvlimit=1&titles=${WIKI_PAGE_ENCODED}&format=json&formatversion=2&redirects=1`;
+const WIKI_SECTIONS_URL = `https://es.wikipedia.org/w/api.php?action=parse&page=${WIKI_PAGE_ENCODED}&prop=sections&format=json&formatversion=2&disabletoc=1`;
+const WIKI_SECTION_TEXT_URL = `https://es.wikipedia.org/w/api.php?action=parse&page=${WIKI_PAGE_ENCODED}&prop=text&format=json&formatversion=2&disableeditsection=1`;
+
+type WikiSection = {
+	title: string;
+	content: string;
+};
+
+type WikiContent = {
+	title: string;
+	sourceUrl: string;
+	sections: WikiSection[];
+	updatedAtLabel: string | null;
+};
+
+function normalizeSpaces(value: string): string {
+	return value.replace(/\s+/g, ' ').trim();
+}
+
+function absolutizeWikiUrls(html: string): string {
+	return html
+		.replace(/href="\/wiki\//g, 'href="https://es.wikipedia.org/wiki/')
+		.replace(/href="\/w\//g, 'href="https://es.wikipedia.org/w/')
+		.replace(/src="\/\//g, 'src="https://')
+		.replace(/srcset="\/\//g, 'srcset="https://');
+}
+
+function cleanWikiHtml(html: string): string {
+	return absolutizeWikiUrls(
+		html
+			.replace(/<style[\s\S]*?<\/style>/gi, '')
+			.replace(/<script[\s\S]*?<\/script>/gi, '')
+			.replace(/<span class="mw-editsection">[\s\S]*?<\/span>/gi, '')
+			.replace(/<sup class="reference"[\s\S]*?<\/sup>/gi, '')
+			.replace(/<span class="mw-cite-backlink"[\s\S]*?<\/span>/gi, '')
+			.replace(/<span class="mw-reflink-text">[\s\S]*?<\/span>/gi, '')
+	);
+}
+
+async function fetchSectionHtml(sectionIndex: number): Promise<string> {
+	try {
+		const response = await fetch(`${WIKI_SECTION_TEXT_URL}&section=${sectionIndex}`);
+		if (!response.ok) return '';
+		const data = await response.json();
+		const html = typeof data?.parse?.text === 'string' ? data.parse.text : '';
+		return html ? cleanWikiHtml(html) : '';
+	} catch {
+		return '';
+	}
+}
+
+async function getWikipediaContent(): Promise<WikiContent> {
+	const fallback: WikiContent = {
+		title: 'Tórtola de Henares',
+		sourceUrl: WIKI_FALLBACK_URL,
+		sections: [
+			{
+				title: '',
+				content:
+					'<div class="mw-parser-output"><p>Tórtola de Henares es un municipio de la provincia de Guadalajara, en Castilla-La Mancha.</p></div>'
+			}
+		],
+		updatedAtLabel: null
+	};
+
+	try {
+		const [summaryResponse, metaResponse, sectionsResponse] = await Promise.all([
+			fetch(WIKI_SUMMARY_URL),
+			fetch(WIKI_PAGE_META_URL),
+			fetch(WIKI_SECTIONS_URL)
+		]);
+
+		const summaryData = summaryResponse.ok ? await summaryResponse.json() : null;
+		const metaData = metaResponse.ok ? await metaResponse.json() : null;
+		const sectionsData = sectionsResponse.ok ? await sectionsResponse.json() : null;
+		const page = Array.isArray(metaData?.query?.pages) ? metaData.query.pages[0] : null;
+
+		const title = typeof summaryData?.title === 'string' ? summaryData.title : fallback.title;
+		const sourceUrl =
+			typeof page?.fullurl === 'string'
+				? page.fullurl
+				: typeof summaryData?.content_urls?.desktop?.page === 'string'
+					? summaryData.content_urls.desktop.page
+					: fallback.sourceUrl;
+
+		const sectionMeta = Array.isArray(sectionsData?.parse?.sections)
+			? sectionsData.parse.sections
+			: [];
+		const excludedTitles = new Set(['Referencias', 'Bibliografía', 'Enlaces externos', 'Véase también']);
+		const pickedSections = sectionMeta
+			.filter((section: any) => Number(section?.toclevel) === 1)
+			.filter((section: any) => typeof section?.line === 'string' && !excludedTitles.has(section.line))
+			.slice(0, 6);
+
+		const leadHtml = await fetchSectionHtml(0);
+		const secondarySections = await Promise.all(
+			pickedSections.map(async (section: any) => ({
+				title: normalizeSpaces(String(section.line || '')),
+				content: await fetchSectionHtml(Number(section.index || 0))
+			}))
+		);
+
+		const sections: WikiSection[] = [
+			...(leadHtml ? [{ title: '', content: leadHtml }] : []),
+			...secondarySections.filter((section) => section.content)
+		];
+
+		const updatedAtLabel =
+			typeof page?.revisions?.[0]?.timestamp === 'string'
+				? new Date(page.revisions[0].timestamp).toLocaleDateString('es-ES')
+				: typeof summaryData?.timestamp === 'string'
+				? new Date(summaryData.timestamp).toLocaleDateString('es-ES')
+				: null;
+
+		return {
+			title,
+			sourceUrl,
+			sections: sections.length ? sections : fallback.sections,
+			updatedAtLabel
+		};
+	} catch {
+		return fallback;
+	}
+}
+
+const wikiContent = await getWikipediaContent();
 
 const allPosts = await getPosts();
 const posts = allPosts.filter((post: any) => post.Categoria === 'El pueblo' && post.Titulo);
@@ -19,7 +150,31 @@ const posts = allPosts.filter((post: any) => post.Categoria === 'El pueblo' && p
 <body>
 <Header />
 <main>
-<section>
+<section class="pueblo-wiki" aria-labelledby="pueblo-wiki-title">
+<h1 id="pueblo-wiki-title">El pueblo: {wikiContent.title}</h1>
+<div class="wiki-layout">
+<div class="wiki-sections">
+{wikiContent.sections.map((section, index) => (
+<section class="wiki-section">
+{section.title && <h2 id={`wiki-section-${index}`}>{section.title}</h2>}
+<div class="wiki-html" set:html={section.content}></div>
+</section>
+))}
+</div>
+<aside id="wiki-media-frame" class="wiki-media-frame" aria-label="Imágenes de Wikipedia">
+<p class="wiki-media-placeholder">Cargando imágenes de Wikipedia...</p>
+</aside>
+</div>
+
+<p class="wiki-source">
+Fuente: <a href={wikiContent.sourceUrl} target="_blank" rel="noopener noreferrer">Wikipedia - {wikiContent.title}</a>
+{wikiContent.updatedAtLabel && <span> (actualizado en Wikipedia: {wikiContent.updatedAtLabel})</span>}
+</p>
+<p class="wiki-license">Contenido basado en Wikipedia (CC BY-SA 4.0).</p>
+</section>
+
+<section class="pueblo-posts" aria-labelledby="pueblo-posts-title">
+<h2 id="pueblo-posts-title">Publicaciones de El pueblo</h2>
 <ul class="post-list">
 {posts.map((post: any) => (
 <PostCard post={post} />
@@ -28,6 +183,217 @@ const posts = allPosts.filter((post: any) => post.Categoria === 'El pueblo' && p
 </section>
 </main>
 <Footer />
+<script is:inline>
+const wikiMediaFrame = document.getElementById('wiki-media-frame');
+const wikiSourceRoot = document.querySelector('.pueblo-wiki');
+
+if (wikiMediaFrame && wikiSourceRoot) {
+	const boxes = Array.from(wikiSourceRoot.querySelectorAll('.wiki-html .infobox'));
+	if (boxes.length > 0) {
+		wikiMediaFrame.innerHTML = '';
+		for (const box of boxes) {
+			box.classList.add('infobox-detached');
+			wikiMediaFrame.appendChild(box);
+		}
+	}
+}
+</script>
 </body>
 </html>
+
+<style>
+	main {
+		width: min(1080px, calc(100% - 2rem));
+		margin: 0 auto;
+		padding: 1.5rem 0 2rem;
+	}
+
+	.pueblo-wiki {
+		background: #fff;
+		border: 1px solid #a2a9b1;
+		border-radius: 2px;
+		padding: 1rem 1.2rem 1.3rem;
+		margin-bottom: 1.5rem;
+		font-family: "Linux Libertine", "Georgia", "Times New Roman", serif;
+		color: #202122;
+	}
+
+	.wiki-layout {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 280px;
+		gap: 1rem;
+		align-items: start;
+	}
+
+	.pueblo-wiki h1 {
+		margin: 0 0 0.65rem;
+		font-size: 2.1rem;
+		line-height: 1.2;
+		font-weight: 400;
+		color: #000;
+		border-bottom: 1px solid #a2a9b1;
+		padding-bottom: 0.2rem;
+	}
+
+	.pueblo-wiki h2 {
+		margin: 0 0 0.45rem;
+		font-size: 1.55rem;
+		font-weight: 400;
+		line-height: 1.25;
+		color: #000;
+		border-bottom: 1px solid #eaecf0;
+		padding-bottom: 0.12rem;
+	}
+
+	.wiki-sections {
+		display: grid;
+		gap: 1.1rem;
+		min-width: 0;
+	}
+
+	.wiki-media-frame {
+		border: 1px solid #a2a9b1;
+		background: #f8f9fa;
+		padding: 0.45rem;
+		position: sticky;
+		top: 84px;
+		align-self: start;
+		max-height: calc(100vh - 100px);
+		overflow: auto;
+	}
+
+	.wiki-media-placeholder {
+		margin: 0;
+		font-size: 0.9rem;
+		color: #54595d;
+	}
+
+	.wiki-section {
+		font-size: 1.05rem;
+		display: flow-root;
+	}
+
+	.wiki-section:not(:first-child) {
+		clear: both;
+	}
+
+	.wiki-html :global(.mw-parser-output) {
+		font-size: 1.05rem;
+		line-height: 1.64;
+	}
+
+	.wiki-html :global(p) {
+		margin: 0;
+		margin-bottom: 0.8rem;
+	}
+
+	.wiki-html :global(a) {
+		color: #0645ad;
+		text-decoration: none;
+	}
+
+	.wiki-html :global(a:hover) {
+		text-decoration: underline;
+	}
+
+	.wiki-html :global(.infobox) {
+		float: none;
+		clear: none;
+		margin: 0;
+		width: 100%;
+		border: 1px solid #a2a9b1;
+		background: #f8f9fa;
+		font-size: 0.92rem;
+	}
+
+	.wiki-media-frame :global(.infobox) {
+		width: 100% !important;
+		max-width: 100%;
+		margin-bottom: 0.8rem;
+		font-size: 0.86rem;
+	}
+
+	.wiki-media-frame :global(.infobox:last-child) {
+		margin-bottom: 0;
+	}
+
+	.wiki-media-frame :global(table) {
+		width: 100% !important;
+		margin: 0 0 0.6rem;
+	}
+
+	.wiki-media-frame :global(th),
+	.wiki-media-frame :global(td) {
+		padding: 0.18rem 0.28rem;
+	}
+
+	.wiki-media-frame :global(img) {
+		max-width: 86%;
+		height: auto;
+		display: block;
+		margin: 0.35rem auto;
+	}
+
+	.wiki-html :global(.mw-heading) {
+		display: none;
+	}
+
+	.wiki-html :global(table) {
+		border-collapse: collapse;
+		margin: 0.7rem 0 1rem;
+	}
+
+	.wiki-html :global(th),
+	.wiki-html :global(td) {
+		border: 1px solid #a2a9b1;
+		padding: 0.25rem 0.45rem;
+	}
+
+	.wiki-html :global(ul),
+	.wiki-html :global(ol) {
+		padding-left: 1.2rem;
+		margin: 0 0 0.8rem;
+	}
+
+	.wiki-source {
+		margin-top: 1rem;
+		font-size: 0.92rem;
+		color: #54595d;
+	}
+
+	.wiki-license {
+		margin-top: 0.4rem;
+		font-size: 0.88rem;
+		color: #54595d;
+	}
+
+	.pueblo-posts h2 {
+		margin: 0 0 0.8rem;
+		font-size: 1.5rem;
+		color: #164f83;
+	}
+
+	@media (max-width: 760px) {
+		main {
+			width: calc(100% - 1rem);
+		}
+
+		.wiki-layout {
+			grid-template-columns: 1fr;
+		}
+
+		.wiki-media-frame {
+			position: static;
+		}
+
+		.pueblo-wiki h1 {
+			font-size: 1.55rem;
+		}
+
+		.wiki-html :global(.infobox) {
+			float: none;
+			width: 100%;
+		}
+	}
+</style>
 

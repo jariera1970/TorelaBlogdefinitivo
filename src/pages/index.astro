@@ -8,6 +8,8 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 
 
 const posts = sortPosts((await getPosts()).filter((post: any) => post.Titulo)).slice(0, 10);
+const featuredPosts = posts.slice(0, 5);
+const squarePosts = posts.slice(5, 10);
 ---
 
 <!doctype html>
@@ -17,16 +19,715 @@ const posts = sortPosts((await getPosts()).filter((post: any) => post.Titulo)).s
 </head>
 <body>
 <Header />
-<main>
-<section>
-<ul class="post-list">
-{posts.map((post: any) => (
+<main class="home-main">
+<aside class="visitor-counter-column">
+<section id="visitor-counter-panel" class="visitor-panel visitor-counter-panel" aria-label="Contador de visitantes">
+<div class="counter-top">
+<strong class="counter-title">Numero de Visitas</strong>
+<div id="counter-display" class="counter-display" aria-live="polite">000000</div>
+</div>
+<ul class="counter-stats" aria-live="polite">
+<li><span class="counter-label"><span class="counter-icon">🧑</span> Hoy</span><span id="count-today">...</span></li>
+<li><span class="counter-label"><span class="counter-icon">🧑</span> Ayer</span><span id="count-yesterday">...</span></li>
+<li><span class="counter-label"><span class="counter-icon">🧺</span> Esta semana</span><span id="count-this-week">...</span></li>
+<li><span class="counter-label"><span class="counter-icon">🧺</span> Semana pasada</span><span id="count-last-week">...</span></li>
+<li><span class="counter-label"><span class="counter-icon">🗂</span> Este mes</span><span id="count-this-month">...</span></li>
+<li><span class="counter-label"><span class="counter-icon">🗂</span> Mes pasado</span><span id="count-last-month">...</span></li>
+<li><span class="counter-label"><span class="counter-icon">📊</span> Total</span><span id="count-all">...</span></li>
+</ul>
+</section>
+</aside>
+<section class="home-posts">
+<ul class="post-list vertical-post-list">
+{featuredPosts.map((post: any) => (
 <PostCard post={post} />
 ))}
 </ul>
 </section>
+<aside class="ranking-column">
+<section class="visitor-panel ranking-panel" aria-label="Ranking de posts mas visitados">
+<div class="ranking-header">
+<em class="ranking-title">Posts más visitados</em>
+</div>
+<ol id="post-ranking-list" class="ranking-list" aria-live="polite">
+<li class="ranking-empty">Cargando ranking...</li>
+</ol>
+</section>
+</aside>
+{squarePosts.length > 0 && (
+<section class="horizontal-posts-block" aria-label="Más publicaciones">
+<div class="horizontal-posts-frame">
+<ul class="horizontal-post-list">
+{squarePosts.map((post: any) => (
+<PostCard post={post} />
+))}
+</ul>
+</div>
+</section>
+)}
 </main>
 <Footer />
+<script is:inline>
+const countApiNamespace = 'torela-blog-definitivo';
+const fallbackPrefix = 'torela-fallback';
+const displayEl = document.getElementById('counter-display');
+const rankingListEl = document.getElementById('post-ranking-list');
+
+const els = {
+today: document.getElementById('count-today'),
+yesterday: document.getElementById('count-yesterday'),
+thisWeek: document.getElementById('count-this-week'),
+lastWeek: document.getElementById('count-last-week'),
+thisMonth: document.getElementById('count-this-month'),
+lastMonth: document.getElementById('count-last-month'),
+all: document.getElementById('count-all')
+};
+
+function pad(num) {
+return String(num).padStart(2, '0');
+}
+
+function dayId(date) {
+return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+function monthId(date) {
+return `${date.getFullYear()}-${pad(date.getMonth() + 1)}`;
+}
+
+function weekId(date) {
+const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+const day = d.getUTCDay() || 7;
+d.setUTCDate(d.getUTCDate() + 4 - day);
+const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+return `${d.getUTCFullYear()}-W${pad(weekNo)}`;
+}
+
+function shiftDate(baseDate, dayDelta = 0, monthDelta = 0) {
+const d = new Date(baseDate);
+if (monthDelta !== 0) {
+d.setMonth(d.getMonth() + monthDelta);
+}
+if (dayDelta !== 0) {
+d.setDate(d.getDate() + dayDelta);
+}
+return d;
+}
+
+function countApiUrl(action, key) {
+return `https://api.countapi.xyz/${action}/${countApiNamespace}/${key}`;
+}
+
+function postClickKey(slug) {
+return `post-click-${slug}`;
+}
+
+async function hitKey(key) {
+const response = await fetch(countApiUrl('hit', key), { keepalive: true });
+if (!response.ok) throw new Error('Hit request failed');
+const data = await response.json();
+return Number(data.value) || 0;
+}
+
+async function getKey(key) {
+const response = await fetch(countApiUrl('get', key));
+if (!response.ok) return 0;
+const data = await response.json();
+return Number(data.value) || 0;
+}
+
+function fallbackIncrement(key) {
+const localKey = `${fallbackPrefix}-${key}`;
+const previous = Number(localStorage.getItem(localKey) ?? '0');
+const next = previous + 1;
+localStorage.setItem(localKey, String(next));
+return next;
+}
+
+function fallbackGet(key) {
+const localKey = `${fallbackPrefix}-${key}`;
+return Number(localStorage.getItem(localKey) ?? '0');
+}
+
+function fmt(value) {
+return Number(value || 0).toLocaleString('es-ES');
+}
+
+function renderDigits(value) {
+if (!displayEl) return;
+const asNumber = Math.max(0, Number(value) || 0);
+const chars = String(asNumber).padStart(6, '0').split('');
+displayEl.innerHTML = chars.map((digit) => `<span class="digit">${digit}</span>`).join('');
+}
+
+function setText(el, value) {
+if (el) el.textContent = fmt(value);
+}
+
+function collectRankablePosts() {
+return Array.from(document.querySelectorAll('.post-card-link[data-post-slug][data-post-title]')).map((link) => ({
+slug: link.getAttribute('data-post-slug') || '',
+title: link.getAttribute('data-post-title') || '',
+link,
+key: postClickKey(link.getAttribute('data-post-slug') || '')
+})).filter((post) => post.slug && post.title);
+}
+
+const BAR_COLORS = ['#e53935','#fb8c00','#fdd835','#43a047','#1e88e5','#8e24aa','#00acc1','#f06292','#6d4c41','#546e7a'];
+
+function renderRanking(entries) {
+if (!rankingListEl) return;
+
+if (!entries.length) {
+rankingListEl.innerHTML = '<li class="ranking-empty">Sin datos todavía. Haz clic en algún post.</li>';
+return;
+}
+
+const totalClicks = Math.max(1, entries.reduce((sum, entry) => sum + Number(entry.clicks || 0), 0));
+
+rankingListEl.innerHTML = entries.map((entry, index) => {
+const rawWidth = (Number(entry.clicks || 0) / totalClicks) * 100;
+const barWidth = entry.clicks > 0 ? Math.max(2, rawWidth) : 0;
+const color = BAR_COLORS[index % BAR_COLORS.length];
+return `
+<li class="ranking-item">
+  <a class="ranking-link" href="/blog/${entry.slug}/" title="${entry.title}">
+    <span class="ranking-label">${entry.title}</span>
+    <span class="ranking-bar-wrap">
+      <span class="ranking-bar" style="width:${barWidth.toFixed(2)}%;background:${color};"></span>
+      <span class="ranking-bar-value">${fmt(entry.clicks)}</span>
+    </span>
+  </a>
+</li>`;
+}).join('');
+}
+
+async function updateRankingBoard() {
+const posts = collectRankablePosts();
+if (!posts.length) {
+renderRanking([]);
+return;
+}
+
+// Render immediately from localStorage — always available, no async needed.
+const localRanking = posts.map((post) => ({
+...post,
+clicks: fallbackGet(post.key)
+}));
+localRanking.sort((a, b) => b.clicks - a.clicks || a.title.localeCompare(b.title, 'es'));
+renderRanking(localRanking);
+
+// Then try to enrich with API values (take whichever is higher).
+try {
+const apiRanking = await Promise.all(posts.map(async (post) => ({
+...post,
+clicks: Math.max(fallbackGet(post.key), await getKey(post.key))
+})));
+apiRanking.sort((a, b) => b.clicks - a.clicks || a.title.localeCompare(b.title, 'es'));
+renderRanking(apiRanking);
+// Keep localStorage in sync with API so both sources agree.
+for (const entry of apiRanking) {
+const localKey = `${fallbackPrefix}-${entry.key}`;
+if (entry.clicks > Number(localStorage.getItem(localKey) ?? '0')) {
+localStorage.setItem(localKey, String(entry.clicks));
+}
+}
+} catch {
+// Already rendered from localStorage above — nothing to do.
+}
+}
+
+function registerPostClickTracking() {
+const posts = collectRankablePosts();
+for (const post of posts) {
+if (post.link.dataset.rankingBound === 'true') continue;
+post.link.dataset.rankingBound = 'true';
+post.link.addEventListener('click', () => {
+// Increment synchronously in localStorage BEFORE navigation.
+// This ensures the count is never lost when the page unloads.
+fallbackIncrement(post.key);
+// Fire-and-forget API hit — keepalive lets it finish even after unload.
+fetch(countApiUrl('hit', post.key), { keepalive: true }).catch(() => {});
+});
+}
+}
+
+async function updateVisitorBoard() {
+const now = new Date();
+const yesterday = shiftDate(now, -1, 0);
+const lastWeekDate = shiftDate(now, -7, 0);
+const lastMonthDate = shiftDate(now, 0, -1);
+
+const keys = {
+all: 'home-all',
+today: `home-day-${dayId(now)}`,
+yesterday: `home-day-${dayId(yesterday)}`,
+thisWeek: `home-week-${weekId(now)}`,
+lastWeek: `home-week-${weekId(lastWeekDate)}`,
+thisMonth: `home-month-${monthId(now)}`,
+lastMonth: `home-month-${monthId(lastMonthDate)}`
+};
+
+try {
+const [all, today, thisWeek, thisMonth, yesterdayCount, lastWeekCount, lastMonthCount] = await Promise.all([
+hitKey(keys.all),
+hitKey(keys.today),
+hitKey(keys.thisWeek),
+hitKey(keys.thisMonth),
+getKey(keys.yesterday),
+getKey(keys.lastWeek),
+getKey(keys.lastMonth)
+]);
+
+renderDigits(all);
+setText(els.today, today);
+setText(els.yesterday, yesterdayCount);
+setText(els.thisWeek, thisWeek);
+setText(els.lastWeek, lastWeekCount);
+setText(els.thisMonth, thisMonth);
+setText(els.lastMonth, lastMonthCount);
+setText(els.all, all);
+} catch {
+const all = fallbackIncrement(keys.all);
+const today = fallbackIncrement(keys.today);
+const thisWeek = fallbackIncrement(keys.thisWeek);
+const thisMonth = fallbackIncrement(keys.thisMonth);
+const yesterdayCount = fallbackGet(keys.yesterday);
+const lastWeekCount = fallbackGet(keys.lastWeek);
+const lastMonthCount = fallbackGet(keys.lastMonth);
+
+renderDigits(all);
+setText(els.today, today);
+setText(els.yesterday, yesterdayCount);
+setText(els.thisWeek, thisWeek);
+setText(els.lastWeek, lastWeekCount);
+setText(els.thisMonth, thisMonth);
+setText(els.lastMonth, lastMonthCount);
+setText(els.all, all);
+}
+}
+
+function updateStickyTop() {
+const nav = document.querySelector('header nav');
+if (!nav) return;
+const navRect = nav.getBoundingClientRect();
+const stickyTop = Math.round(navRect.bottom + window.scrollY + 16);
+document.documentElement.style.setProperty('--panels-sticky-top', `${stickyTop}px`);
+}
+
+function positionSideColumns() {
+const panel = document.getElementById('visitor-counter-panel');
+const rankingPanel = document.querySelector('.ranking-panel');
+const homeMain = document.querySelector('.home-main');
+const menuLinks = Array.from(document.querySelectorAll('header .internal-links a'));
+
+if (!panel || !rankingPanel || !homeMain) return;
+
+if (window.matchMedia('(max-width: 900px)').matches) {
+homeMain.style.removeProperty('--home-left');
+homeMain.style.removeProperty('--home-gap');
+homeMain.style.removeProperty('--home-right');
+return;
+}
+
+if (menuLinks.length >= 2) {
+const inicioRect = menuLinks[0].getBoundingClientRect();
+const noticiasRect = menuLinks[1].getBoundingClientRect();
+const lastRect = menuLinks[menuLinks.length - 1].getBoundingClientRect();
+const viewportWidth = window.innerWidth;
+const counterLeft = Math.max(16, Math.round(inicioRect.left - panel.offsetWidth - 28));
+const postStart = Math.round(noticiasRect.left);
+const columnGap = Math.max(64, postStart - counterLeft - panel.offsetWidth);
+const rankingRight = Math.max(16, viewportWidth - Math.round(lastRect.right) - rankingPanel.offsetWidth - 28);
+
+homeMain.style.setProperty('--home-left', `${counterLeft}px`);
+homeMain.style.setProperty('--home-gap', `${columnGap}px`);
+homeMain.style.setProperty('--home-right', `${rankingRight}px`);
+}
+
+updateStickyTop();
+}
+
+registerPostClickTracking();
+updateVisitorBoard();
+updateRankingBoard();
+
+window.addEventListener('load', () => {
+registerPostClickTracking();
+positionSideColumns();
+updateRankingBoard();
+});
+window.addEventListener('resize', positionSideColumns);
+positionSideColumns();
+</script>
+<style is:global>
+/* Ranking bar chart — these elements are created dynamically via innerHTML
+   so they need global (non-scoped) styles to be applied. */
+.ranking-item {
+  margin: 0;
+  padding: 0;
+}
+.ranking-link {
+  display: grid;
+  grid-template-columns: minmax(12rem, 1fr) minmax(12rem, 1.2fr);
+  align-items: center;
+  gap: 0.7rem;
+  text-decoration: none;
+  color: inherit;
+  user-select: none;
+}
+.ranking-label {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #1a2e4a;
+  text-align: left;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.25;
+  padding-right: 0;
+  font-family: "Tahoma", "Verdana", sans-serif;
+}
+.ranking-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+.ranking-bar {
+  display: block;
+  height: 18px;
+  border-radius: 2px;
+  min-width: 0;
+  flex-shrink: 0;
+  transition: width 0.4s ease;
+}
+.ranking-bar-value {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #2c3e6a;
+  white-space: nowrap;
+  font-family: "Tahoma", "Verdana", sans-serif;
+}
+.ranking-empty {
+  font-size: 0.92rem;
+  color: #6b82a0;
+  text-align: center;
+  padding: 0.5rem 0;
+  font-family: "Tahoma", "Verdana", sans-serif;
+}
+</style>
+<style>
+.home-main {
+width: min(1700px, calc(100% - 2rem));
+max-width: min(1700px, calc(100% - 2rem));
+display: grid;
+grid-template-columns: minmax(250px, 300px) minmax(640px, 760px) minmax(330px, 400px);
+column-gap: clamp(2.6rem, 4vw, 5rem);
+row-gap: 1rem;
+align-items: start;
+justify-content: center;
+margin: 0 auto;
+}
+
+.visitor-counter-column,
+.ranking-column {
+position: relative;
+padding-top: 3rem;
+}
+
+.home-posts {
+min-width: 0;
+justify-self: center;
+width: 100%;
+max-width: 760px;
+}
+
+.vertical-post-list :global(.post-excerpt) {
+font-size: 1.34rem;
+line-height: 1.62;
+}
+
+.vertical-post-list :global(.post-card) {
+border-top: 0;
+padding-top: 0;
+margin-top: 0;
+}
+
+.vertical-post-list :global(.post-card:not(:first-child)) {
+border-top: 5px double #111;
+padding-top: 1.35rem;
+margin-top: 0.9rem;
+}
+
+.horizontal-posts-block {
+grid-column: 1 / -1;
+margin-top: 1.4rem;
+padding-top: 1rem;
+border-top: 1px solid #c7d0dc;
+}
+
+.horizontal-posts-frame {
+width: min(1600px, calc(100% - 1rem));
+margin: 0 auto;
+}
+
+.horizontal-post-list {
+list-style: none;
+margin: 0;
+padding: 0;
+display: grid;
+grid-template-columns: repeat(5, minmax(280px, 1fr));
+gap: 1rem;
+}
+
+.horizontal-post-list :global(.post-card) {
+border: 1px solid #d4dde8;
+padding: 0;
+margin: 0;
+background: #fff;
+height: 100%;
+}
+
+.horizontal-post-list :global(.post-card-link) {
+grid-template-columns: 1fr;
+gap: 0.7rem;
+}
+
+.horizontal-post-list :global(.post-thumb) {
+aspect-ratio: 4 / 3;
+width: 100%;
+border-radius: 0;
+}
+
+.horizontal-post-list :global(.post-content) {
+padding: 0 0.6rem 0.7rem;
+}
+
+.horizontal-post-list :global(.post-title) {
+font-size: 2rem;
+line-height: 1.15;
+}
+
+.horizontal-post-list :global(.post-excerpt) {
+font-size: 1rem;
+line-height: 1.42;
+}
+
+.horizontal-post-list :global(.post-date) {
+font-size: 0.85rem;
+}
+
+.ranking-column {
+justify-self: start;
+margin-left: clamp(1rem, 2.6vw, 2.4rem);
+}
+
+.visitor-panel {
+position: sticky;
+top: var(--panels-sticky-top, 88px);
+transform: none;
+padding: 0.95rem 1rem;
+background: #f7f7f7;
+border: 1px solid #cfd7e2;
+border-radius: 6px;
+box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+font-family: "Tahoma", "Verdana", sans-serif;
+color: #224;
+}
+
+.visitor-counter-panel,
+.ranking-panel {
+max-width: 430px;
+}
+
+.counter-display {
+display: flex;
+justify-content: flex-end;
+gap: 3px;
+margin-bottom: 0;
+}
+
+.counter-top,
+.ranking-header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: 0.8rem;
+margin-bottom: 0.8rem;
+}
+
+.counter-title,
+.ranking-title {
+font-size: 1.1rem;
+font-weight: 700;
+font-style: italic;
+color: #1a3a6e;
+white-space: nowrap;
+}
+
+.digit {
+display: inline-flex;
+align-items: center;
+justify-content: center;
+width: 26px;
+height: 36px;
+background: linear-gradient(#343434, #0f0f0f);
+border: 1px solid #090909;
+border-radius: 2px;
+color: #f5f5f5;
+font-family: "Courier New", monospace;
+font-size: 1.6rem;
+font-weight: 700;
+line-height: 1;
+box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15);
+}
+
+.counter-stats,
+.ranking-list {
+list-style: none;
+margin: 0;
+padding: 0;
+display: grid;
+gap: 0.18rem;
+}
+
+.counter-stats li {
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: 0.6rem;
+font-size: 1.08rem;
+}
+
+.counter-label {
+display: inline-flex;
+align-items: center;
+gap: 0.35rem;
+color: #1e2e46;
+}
+
+.counter-icon {
+font-size: 1.08rem;
+line-height: 1;
+}
+
+.counter-stats li span:last-child {
+font-weight: 700;
+color: #254f9c;
+min-width: 4ch;
+text-align: right;
+}
+
+.ranking-list {
+gap: 0.55rem;
+}
+
+@media (max-width: 900px) {
+.home-main {
+width: calc(100% - 2rem);
+max-width: calc(100% - 2rem);
+grid-template-columns: 1fr;
+column-gap: 1rem;
+row-gap: 1rem;
+margin: 0 auto;
+}
+
+.visitor-counter-column {
+padding-top: 0;
+order: 2;
+}
+
+.home-posts {
+order: 1;
+}
+
+.ranking-column {
+padding-top: 0;
+order: 3;
+}
+
+.visitor-panel {
+position: static;
+}
+
+.visitor-counter-panel,
+.ranking-panel {
+max-width: 320px;
+margin: 0 auto;
+}
+
+.digit {
+width: 22px;
+height: 30px;
+font-size: 1.3rem;
+}
+
+.counter-stats li {
+font-size: 0.96rem;
+}
+
+.horizontal-post-list {
+grid-template-columns: 1fr;
+}
+}
+
+@media (min-width: 901px) and (max-width: 1300px) {
+.home-main {
+width: min(1400px, calc(100% - 1.5rem));
+max-width: min(1400px, calc(100% - 1.5rem));
+grid-template-columns: minmax(220px, 260px) minmax(500px, 620px) minmax(280px, 340px);
+column-gap: clamp(1.6rem, 2.6vw, 2.8rem);
+margin: 0 auto;
+}
+
+.visitor-counter-column,
+.ranking-column {
+padding-top: 3rem;
+}
+
+.visitor-counter-panel,
+.ranking-panel {
+max-width: 360px;
+}
+
+.counter-title,
+.ranking-title {
+font-size: 0.95rem;
+}
+
+.counter-stats li {
+font-size: 0.98rem;
+}
+
+.ranking-post-title {
+font-size: 0.93rem;
+}
+}
+
+.counter-stats li:last-child {
+padding-top: 0.2rem;
+border-top: 1px dashed #b9c4d3;
+margin-top: 0.12rem;
+}
+
+.counter-stats li:last-child span:last-child {
+color: #17408e;
+}
+
+.counter-stats li,
+.counter-label,
+.digit,
+.counter-stats li span:last-child,
+.ranking-link {
+user-select: none;
+}
+
+.counter-stats li span:last-child {
+margin: 0;
+}
+</style>
 </body>
 </html>
 

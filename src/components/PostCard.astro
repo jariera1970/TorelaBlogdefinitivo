@@ -133,7 +133,12 @@ const hasValidDate = publishedDate && !Number.isNaN(publishedDate.valueOf());
 
 {title && slug && (
   <li class="post-card">
-    <a class="post-card-link" href={`/blog/${slug}/`}>
+    <a
+      class="post-card-link"
+      href={`/blog/${slug}/`}
+      data-post-slug={slug}
+      data-post-title={title}
+    >
       {image && <img class="post-thumb" src={image} alt={title} loading="lazy" />}
       <div class="post-content">
         <h3 class="post-title">{title}</h3>

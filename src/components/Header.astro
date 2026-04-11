@@ -4,7 +4,7 @@ import HeaderLink from './HeaderLink.astro';
 
 <header>
 	<div class="header-banner">
-		<img src="/TorelaFoto.jpg" alt="Torela" loading="lazy" />
+		<img src="/TorelaFoto.jpg" alt="Torela" loading="eager" fetchpriority="high" decoding="async" />
 	</div>
 	<nav>
 		<div class="internal-links">
@@ -76,9 +76,15 @@ import HeaderLink from './HeaderLink.astro';
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
+		gap: 1rem;
 		padding: 0 1em;
 		background: white;
 		box-shadow: 0 2px 8px rgba(var(--black), 5%);
+	}
+
+	nav::before {
+		content: '';
+		flex: 0 0 112px;
 	}
 	nav a {
 		padding: 1em 0.5em;
@@ -93,6 +99,13 @@ import HeaderLink from './HeaderLink.astro';
 	.social-links,
 	.social-links a {
 		display: flex;
+	}
+
+	.social-links {
+		align-items: center;
+		gap: 0.25rem;
+		flex: 0 0 112px;
+		justify-content: flex-end;
 	}
 
 	.social-icon-img {
@@ -113,9 +126,11 @@ import HeaderLink from './HeaderLink.astro';
 	}
 
 	.header-banner {
-		width: 100%;
+		width: min(1120px, max(320px, calc(100% - 224px - 2em)));
+		margin: 0;
 		overflow: visible;
 		position: relative;
+		margin-inline: auto;
 	}
 
 	.header-banner img {
@@ -123,6 +138,7 @@ import HeaderLink from './HeaderLink.astro';
 		height: auto;
 		display: block;
 		object-fit: contain;
+		object-position: center;
 	}
 
 	nav {
@@ -133,17 +149,36 @@ import HeaderLink from './HeaderLink.astro';
 
 	.internal-links {
 		display: flex;
-		flex-wrap: wrap;
+		flex: 1 1 auto;
+		flex-wrap: nowrap;
+		justify-content: center;
+		min-width: 0;
+		overflow-x: auto;
+		scrollbar-width: none;
+	}
+
+	.internal-links::-webkit-scrollbar {
+		display: none;
 	}
 
 	@media (max-width: 900px) {
+		.header-banner {
+			width: 100%;
+		}
+
 		nav {
 			gap: 0.5rem;
 			align-items: flex-start;
 			flex-direction: column;
 		}
 
+		nav::before {
+			display: none;
+		}
+
 		.internal-links {
+			flex-wrap: wrap;
+			overflow-x: visible;
 			row-gap: 0.25rem;
 		}
 	}
