@@ -1,5 +1,9 @@
 ---
 import HeaderLink from './HeaderLink.astro';
+
+const pathname = Astro.url.pathname.replace(import.meta.env.BASE_URL, '');
+const isElPuebloPath = pathname === '/el-pueblo' || pathname.startsWith('/el-pueblo/');
+const elPuebloTriggerClass = isElPuebloPath ? 'dropdown-trigger active' : 'dropdown-trigger';
 ---
 
 <header>
@@ -18,7 +22,15 @@ import HeaderLink from './HeaderLink.astro';
 			<HeaderLink href="/agricultura">Agricultura</HeaderLink>
 			<HeaderLink href="/toros">Toros</HeaderLink>
 			<HeaderLink href="/hace-30-anos">Hace 30 años</HeaderLink>
-			<HeaderLink href="/el-pueblo">El pueblo</HeaderLink>
+			<div class="menu-dropdown">
+				<HeaderLink href="/el-pueblo" class={elPuebloTriggerClass}>El pueblo</HeaderLink>
+				<ul class="dropdown-menu" aria-label="Submenú El pueblo">
+					<li><a href="/el-pueblo/zonas">Zonas</a></li>
+					<li><a href="/el-pueblo/plano-turistico">Plano turístico</a></li>
+					<li><a href="/el-pueblo/fiestas">Fiestas</a></li>
+					<li><a href="/el-pueblo/fotos">Fotos</a></li>
+				</ul>
+			</div>
 			<HeaderLink href="/enlaces">Enlaces</HeaderLink>
 			<HeaderLink href="/asociacion">Asociacion</HeaderLink>
 		</div>
@@ -153,8 +165,75 @@ import HeaderLink from './HeaderLink.astro';
 		flex-wrap: nowrap;
 		justify-content: center;
 		min-width: 0;
-		overflow-x: auto;
+		overflow: visible;
 		scrollbar-width: none;
+	}
+
+	.menu-dropdown {
+		position: relative;
+		display: inline-flex;
+		align-items: stretch;
+	}
+
+	.dropdown-trigger {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		padding: 1em 0.5em;
+		color: var(--black);
+		border-bottom: 4px solid transparent;
+		text-decoration: none;
+		cursor: pointer;
+		user-select: none;
+	}
+
+	.dropdown-trigger.active,
+	.menu-dropdown:hover > .dropdown-trigger,
+	.menu-dropdown:focus-within > .dropdown-trigger {
+		border-bottom-color: var(--accent);
+	}
+
+	.dropdown-trigger::after {
+		content: '▾';
+		font-size: 0.7rem;
+		line-height: 1;
+		margin-top: 0.05rem;
+	}
+
+	.dropdown-menu {
+		list-style: none;
+		margin: 0;
+		padding: 0.35rem 0;
+		position: absolute;
+		top: calc(100% - 2px);
+		left: 0;
+		min-width: 180px;
+		background: #343434;
+		border: 1px solid #2a2a2a;
+		box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
+		z-index: 5000;
+		display: none;
+	}
+
+	.menu-dropdown:hover .dropdown-menu,
+	.menu-dropdown:focus-within .dropdown-menu {
+		display: block;
+	}
+
+	.dropdown-menu a {
+		display: block;
+		padding: 0.58rem 0.75rem;
+		color: #fff;
+		border-bottom: 0;
+		text-decoration: none;
+		white-space: nowrap;
+		font-size: 0.95rem;
+	}
+
+	.dropdown-menu a:hover,
+	.dropdown-menu a:focus {
+		background: #1f87c2;
+		color: #fff;
 	}
 
 	.internal-links::-webkit-scrollbar {
@@ -178,8 +257,28 @@ import HeaderLink from './HeaderLink.astro';
 
 		.internal-links {
 			flex-wrap: wrap;
-			overflow-x: visible;
+			overflow: visible;
 			row-gap: 0.25rem;
 		}
+
+		.menu-dropdown {
+			flex-direction: column;
+			align-items: stretch;
+		}
+
+		.dropdown-menu {
+			position: static;
+			display: block;
+			min-width: 0;
+			box-shadow: none;
+			margin-top: 0.2rem;
+			border: 0;
+			padding-top: 0;
+		}
+
+		.dropdown-trigger::after {
+			display: inline;
+		}
+
 	}
 </style>

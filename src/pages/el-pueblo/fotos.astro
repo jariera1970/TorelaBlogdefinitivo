@@ -1,0 +1,33 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { SITE_TITLE } from '../../consts';
+---
+
+<!doctype html>
+<html lang="es">
+<head>
+  <BaseHead title={`Fotos | ${SITE_TITLE}`} description="Fotos de El pueblo" />
+</head>
+<body>
+  <Header />
+  <main class="simple-page">
+    <h1>Fotos</h1>
+    <p>Sección en preparación para la galería de fotos de El pueblo.</p>
+  </main>
+  <Footer />
+</body>
+</html>
+
+<style>
+  .simple-page {
+    width: min(980px, calc(100% - 2rem));
+    margin: 0 auto;
+    padding: 1.5rem 0 2rem;
+  }
+
+  .simple-page h1 {
+    margin: 0 0 0.8rem;
+  }
+</style>

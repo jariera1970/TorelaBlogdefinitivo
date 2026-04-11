@@ -1,0 +1,301 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { SITE_TITLE } from '../../consts';
+
+const guidePdfUrl = 'https://tortoladehenares.es/wp-content/uploads/tortola-guia-turistica.pdf';
+---
+
+<!doctype html>
+<html lang="es">
+<head>
+  <BaseHead title={`Fiestas | ${SITE_TITLE}`} description="Fiestas de El pueblo" />
+</head>
+<body>
+  <Header />
+  <main class="fiestas-page">
+    <header class="fiestas-hero">
+      <h1>Fiestas y tradiciones</h1>
+      <p>
+        Resumen de las celebraciones principales de Tórtola de Henares a partir de la guía turística municipal.
+      </p>
+      <a class="guide-link" href={guidePdfUrl} target="_blank" rel="noopener noreferrer">Ver guía turística completa</a>
+    </header>
+
+    <section class="fiestas-grid" aria-label="Fiestas principales">
+      <article class="fiesta-card destacada">
+        <span class="fiesta-tag">Mayo</span>
+        <h2>Fiestas de Mayo</h2>
+        <div class="photo-stack two-up">
+          <figure>
+            <img src="/images/el-pueblo/fiestas-mayo-cristo.webp" alt="Imagen religiosa de las Fiestas de Mayo en Tórtola de Henares" loading="lazy" />
+          </figure>
+          <figure>
+            <img src="/images/el-pueblo/fiestas-mayo-procesion.webp" alt="Procesión de las Fiestas de Mayo en Tórtola de Henares" loading="lazy" />
+          </figure>
+        </div>
+        <p>
+          A comienzos de mes se celebra la festividad de la Virgen de la Cuesta y del Cristo de los Remedios,
+          conocida en el pueblo como el día de Mayo. La tradición incluye pasacalles, música, procesiones,
+          bailes y un ambiente muy participativo en todo el municipio.
+        </p>
+        <p>
+          La jornada mantiene también el reparto de bollos, limonada y anís, una costumbre popular muy ligada a
+          las hermandades locales.
+        </p>
+      </article>
+
+      <article class="fiesta-card">
+        <span class="fiesta-tag">31 de mayo</span>
+        <h2>Virgen del Amor Hermoso</h2>
+        <p>
+          A finales de mayo se celebra otra cita religiosa destacada en honor a la Virgen del Amor Hermoso,
+          con misa y procesión por las calles del municipio.
+        </p>
+      </article>
+
+      <article class="fiesta-card destacada">
+        <span class="fiesta-tag">Agosto</span>
+        <h2>Fiestas de Verano</h2>
+        <figure class="fiesta-photo hero-photo">
+          <img src="/images/el-pueblo/fiestas-verano.webp" alt="Escena popular de las Fiestas de Verano de Tórtola de Henares" loading="lazy" />
+        </figure>
+        <p>
+          Durante las dos últimas semanas de agosto se desarrollan las fiestas estivales. La primera semana tiene
+          un carácter cultural, con concursos, rondallas, actividades juveniles, juegos para la infancia,
+          exposiciones y propuestas teatrales o musicales.
+        </p>
+        <p>
+          La segunda parte de las fiestas se orienta más al ocio popular, con bailes, actos taurinos y el tradicional
+          correr de toros por los campos tortoleños, una costumbre muy arraigada en la localidad.
+        </p>
+      </article>
+
+      <article class="fiesta-card">
+        <span class="fiesta-tag">25 de noviembre</span>
+        <h2>Santa Catalina</h2>
+        <figure class="fiesta-photo saint-photo">
+          <img src="/images/el-pueblo/santa-catalina.webp" alt="Imagen de Santa Catalina en la guía turística de Tórtola de Henares" loading="lazy" />
+        </figure>
+        <p>
+          La patrona de Tórtola protagoniza una celebración con liturgia, recitales, exposiciones, actividades de
+          convivencia y actuaciones musicales, además de acciones de sensibilización y participación vecinal.
+        </p>
+      </article>
+    </section>
+
+    <section class="otras-fiestas" aria-labelledby="otras-fiestas-title">
+      <div class="section-head">
+        <h2 id="otras-fiestas-title">Otras fiestas y eventos culturales</h2>
+        <p>Fechas destacadas del calendario festivo y social del pueblo.</p>
+      </div>
+
+      <div class="event-list">
+        <article>
+          <h3>Carnavales</h3>
+          <p>Celebración con sardina, música de dulzaineros y muestras de folclore local.</p>
+        </article>
+        <article>
+          <h3>Semana del Libro</h3>
+          <p>Encuentros culturales y actividades en torno a la lectura durante el mes de abril.</p>
+        </article>
+        <article>
+          <h3>San Isidro Labrador</h3>
+          <p>Jornada vinculada a la tradición agrícola local, en torno al 15 de mayo.</p>
+        </article>
+        <article>
+          <h3>Halloween</h3>
+          <p>Fiesta popular de disfraces y ambientación temática a finales de octubre.</p>
+        </article>
+        <article>
+          <h3>Navidad</h3>
+          <p>
+            Programa con actividades familiares, mercadillo navideño, visita de Papá Noel, concurso de belenes,
+            campanadas de fin de año y cabalgata de Reyes.
+          </p>
+        </article>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</body>
+</html>
+
+<style>
+  .fiestas-page {
+    width: min(1120px, calc(100% - 2rem));
+    margin: 0 auto;
+    padding: 1.5rem 0 2rem;
+  }
+
+  .fiestas-hero {
+    padding: 1.4rem 1.5rem;
+    border: 1px solid #d7e0ec;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #f3f7fb 0%, #ffffff 100%);
+  }
+
+  .fiestas-hero h1 {
+    margin: 0;
+    color: #163f6b;
+  }
+
+  .fiestas-hero p {
+    max-width: 62rem;
+    margin: 0.65rem 0 0;
+    font-size: 1.04rem;
+    line-height: 1.6;
+  }
+
+  .guide-link {
+    display: inline-flex;
+    margin-top: 1rem;
+    padding: 0.55rem 1rem;
+    border-radius: 6px;
+    background: #163f6b;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .guide-link:hover {
+    background: #1f5fa0;
+  }
+
+  .fiestas-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1.2rem;
+  }
+
+  .fiesta-card {
+    border: 1px solid #d7e0ec;
+    border-radius: 10px;
+    background: #fff;
+    padding: 1.1rem 1.15rem;
+  }
+
+  .fiesta-card.destacada {
+    background: #f8fbff;
+  }
+
+  .fiesta-tag {
+    display: inline-flex;
+    margin-bottom: 0.6rem;
+    padding: 0.22rem 0.6rem;
+    border-radius: 999px;
+    background: #d8e8f8;
+    color: #163f6b;
+    font-size: 0.86rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .fiesta-card h2 {
+    margin: 0 0 0.65rem;
+    color: #1a2e4a;
+    font-size: 1.4rem;
+  }
+
+  .fiesta-card p {
+    margin: 0.55rem 0 0;
+    line-height: 1.6;
+  }
+
+  .fiesta-photo,
+  .photo-stack figure {
+    margin: 0.15rem 0 0.85rem;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #e8eef6;
+    border: 1px solid #d7e0ec;
+  }
+
+  .fiesta-photo img,
+  .photo-stack img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .hero-photo {
+    aspect-ratio: 16 / 9;
+  }
+
+  .saint-photo {
+    max-width: 260px;
+  }
+
+  .photo-stack {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .photo-stack.two-up {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .photo-stack.two-up figure {
+    aspect-ratio: 4 / 3;
+  }
+
+  .otras-fiestas {
+    margin-top: 1.2rem;
+    padding: 1.2rem 1.3rem;
+    border: 1px solid #d7e0ec;
+    border-radius: 10px;
+    background: #fff;
+  }
+
+  .section-head h2 {
+    margin: 0;
+    color: #163f6b;
+  }
+
+  .section-head p {
+    margin: 0.45rem 0 0;
+    color: #526075;
+  }
+
+  .event-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem 1rem;
+    margin-top: 1rem;
+  }
+
+  .event-list article {
+    padding: 0.9rem 1rem;
+    border-radius: 8px;
+    background: #f7f9fc;
+  }
+
+  .event-list h3 {
+    margin: 0 0 0.35rem;
+    font-size: 1.06rem;
+    color: #1a2e4a;
+  }
+
+  .event-list p {
+    margin: 0;
+    line-height: 1.55;
+  }
+
+  @media (max-width: 900px) {
+    .fiestas-grid,
+    .event-list {
+      grid-template-columns: 1fr;
+    }
+
+    .photo-stack.two-up {
+      grid-template-columns: 1fr;
+    }
+
+    .saint-photo {
+      max-width: none;
+    }
+  }
+</style>

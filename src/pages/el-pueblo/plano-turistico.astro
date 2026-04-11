@@ -1,0 +1,320 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { SITE_TITLE } from '../../consts';
+
+const guidePdfUrl = 'https://tortoladehenares.es/wp-content/uploads/tortola-guia-turistica.pdf';
+---
+
+<!doctype html>
+<html lang="es">
+<head>
+  <BaseHead title={`Plano turistico | ${SITE_TITLE}`} description="Plano turistico de El pueblo" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+</head>
+<body>
+  <Header />
+  <main class="turismo-page">
+    <header class="turismo-header">
+      <h1>Plano turístico</h1>
+      <p>
+        Consulta la guía turística de Tórtola de Henares y los principales puntos de interés del municipio.
+      </p>
+    </header>
+
+    <section class="turismo-grid" aria-label="Información turística">
+      <article class="turismo-card">
+        <h2>Puntos de interés</h2>
+        <ul>
+          <li>Río Henares</li>
+          <li>Puente de Fontanar</li>
+          <li>Cirolera</li>
+          <li>Sotos</li>
+          <li>El Salgar (Fontanar)</li>
+          <li>Barranco de Vallés (arboleda de chopos)</li>
+          <li>Casa del Hambre, con vistas sobre el Henares</li>
+          <li>Casa de Codurque, con vistas sobre el Henares</li>
+          <li>Cuevas del Monte</li>
+          <li>Pico del Águila y monte límite con Taracena</li>
+        </ul>
+      </article>
+
+      <article class="turismo-card">
+        <h2>Monumentos y patrimonio</h2>
+        <ul>
+          <li><span class="map-ref">1</span> Iglesia de Nuestra Señora de la Asunción</li>
+          <li><span class="map-ref">2-3-4</span> Fuente Vieja, Fuente Nueva y Lavadero tradicional</li>
+          <li><span class="map-ref">5</span> Ermita</li>
+          <li><span class="map-ref">6</span> El Espartero</li>
+          <li><span class="map-ref">7</span> Las Bodegas</li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="mapa-section" aria-labelledby="mapa-title">
+      <h2 id="mapa-title">Mapa interactivo</h2>
+      <p class="mapa-desc">Haz clic en los marcadores para ver el nombre de cada monumento. <span class="leyenda-inline"><span class="dot rojo"></span> Monumentos</span></p>
+      <div id="mapa-turistico"></div>
+    </section>
+
+    <section class="guide-viewer" aria-labelledby="guia-turistica-title">
+      <h2 id="guia-turistica-title">Guía turística completa</h2>
+      <p class="guide-desc">Descarga o consulta la guía oficial de Tórtola de Henares en formato PDF.</p>
+      <div class="guide-actions">
+        <a class="download-btn" href={guidePdfUrl} download="guia-turistica-tortola.pdf" target="_blank" rel="noopener noreferrer">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 2v13"/>
+            <path d="m7 12 5 5 5-5"/>
+            <path d="M3 17v2a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/>
+          </svg>
+          Descargar guía (PDF)
+        </a>
+        <a class="open-btn" href={guidePdfUrl} target="_blank" rel="noopener noreferrer">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+            <polyline points="15 3 21 3 21 9"/>
+            <line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+          Abrir en nueva pestaña
+        </a>
+      </div>
+    </section>
+  </main>
+  <Footer />
+  <script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script is:inline>
+    (function () {
+      var map = L.map('mapa-turistico', { scrollWheelZoom: false });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+
+      function crearIcono(color, num) {
+        return L.divIcon({
+          className: '',
+          html: '<div style="background:' + color + ';color:#fff;min-width:22px;height:22px;padding:0 4px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;border:1px solid rgba(0,0,0,0.22);box-shadow:0 1px 3px rgba(0,0,0,0.28);line-height:1;">' + num + '</div>',
+          iconSize: [22, 22],
+          iconAnchor: [11, 11],
+          popupAnchor: [0, -12]
+        });
+      }
+
+      var monumentos = [
+        { n: 'Iglesia de Ntra. Sra. de la Asunción', lat: 40.70684110951229, lng: -3.1244114061880675, label: '1' },
+        { n: 'Fuente Vieja · Fuente Nueva · Lavadero', lat: 40.705528607709155, lng: -3.1245602933948575, label: '2-3-4' },
+        { n: 'Ermita', lat: 40.71100315846456, lng: -3.1240365150144935, label: '5' },
+        { n: 'El Espartero', lat: 40.70626199939884, lng: -3.1267971350024557, label: '6' },
+        { n: 'Las Bodegas', lat: 40.70659726084909, lng: -3.1243279091677314, label: '7' }
+      ];
+
+      var allLatLngs = [];
+
+      monumentos.forEach(function (m, i) {
+        var ll = [m.lat, m.lng];
+        allLatLngs.push(ll);
+        L.marker(ll, { icon: crearIcono('#c0392b', m.label) })
+          .addTo(map)
+          .bindPopup('<strong>' + m.n + '</strong>');
+      });
+
+      map.fitBounds(allLatLngs, { padding: [8, 8] });
+      map.setZoom(Math.min(map.getZoom() + 2, 16));
+    })();
+  </script>
+</body>
+</html>
+
+<style>
+  .turismo-page {
+    width: min(1240px, calc(100% - 2rem));
+    margin: 0 auto;
+    padding: 1.5rem 0 2rem;
+  }
+
+  .turismo-header h1 {
+    margin: 0;
+    color: #163f6b;
+  }
+
+  .turismo-header p {
+    margin: 0.55rem 0 0;
+    font-size: 1.08rem;
+  }
+
+  .turismo-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1.2rem;
+  }
+
+  .turismo-card {
+    border: 1px solid #d7e0ec;
+    background: #fff;
+    border-radius: 8px;
+    padding: 1rem 1rem 0.8rem;
+  }
+
+  .turismo-card h2 {
+    margin: 0 0 0.7rem;
+    font-size: 1.35rem;
+    color: #1a2e4a;
+  }
+
+  .turismo-card ul {
+    margin: 0;
+    padding-left: 1.15rem;
+  }
+
+  .turismo-card li {
+    margin-bottom: 0.35rem;
+    line-height: 1.45;
+  }
+
+  .map-ref {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.2rem;
+    padding: 0.1rem 0.45rem;
+    margin-right: 0.45rem;
+    border-radius: 999px;
+    background: #c0392b;
+    color: #fff;
+    font-size: 0.86rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .mapa-section {
+    margin-top: 1.3rem;
+    border: 1px solid #cfd8e4;
+    border-radius: 8px;
+    padding: 1.2rem 1.4rem 0;
+    background: #fff;
+  }
+
+  .mapa-section h2 {
+    margin: 0 0 0.35rem;
+    font-size: 1.35rem;
+    color: #163f6b;
+  }
+
+  .mapa-desc {
+    margin: 0 0 0.85rem;
+    font-size: 0.97rem;
+    color: #4a5568;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .leyenda-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.93rem;
+  }
+
+  .dot {
+    display: inline-block;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    border: 2px solid rgba(0,0,0,0.2);
+  }
+
+  .dot.rojo { background: #c0392b; }
+
+  #mapa-turistico {
+    height: 560px;
+    width: 100%;
+    border-radius: 0 0 6px 6px;
+  }
+
+
+    margin-top: 1.3rem;
+    border: 1px solid #cfd8e4;
+    border-radius: 8px;
+    padding: 1.4rem 1.6rem;
+    background: #f2f6fb;
+  }
+
+  .guide-viewer h2 {
+    margin: 0 0 0.4rem;
+    font-size: 1.35rem;
+    color: #163f6b;
+  }
+
+  .guide-desc {
+    margin: 0 0 1.2rem;
+    color: #4a5568;
+    font-size: 1rem;
+  }
+
+  .guide-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+
+  .download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.55rem 1.2rem;
+    background: #163f6b;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 6px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.18s;
+  }
+
+  .download-btn:hover {
+    background: #1f5fa0;
+  }
+
+  .download-btn svg,
+  .open-btn svg {
+    width: 1.15rem;
+    height: 1.15rem;
+    flex-shrink: 0;
+  }
+
+  .open-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.55rem 1.2rem;
+    background: #fff;
+    color: #163f6b;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 6px;
+    border: 2px solid #163f6b;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.18s, color 0.18s;
+  }
+
+  .open-btn:hover {
+    background: #163f6b;
+    color: #fff;
+  }
+
+  @media (max-width: 900px) {
+    .turismo-grid {
+      grid-template-columns: 1fr;
+    }
+
+    #mapa-turistico {
+      height: 340px;
+    }
+  }
+</style>

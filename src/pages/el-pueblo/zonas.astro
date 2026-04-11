@@ -1,0 +1,33 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { SITE_TITLE } from '../../consts';
+---
+
+<!doctype html>
+<html lang="es">
+<head>
+  <BaseHead title={`Zonas | ${SITE_TITLE}`} description="Zonas de El pueblo" />
+</head>
+<body>
+  <Header />
+  <main class="simple-page">
+    <h1>Zonas</h1>
+    <p>Sección en preparación para mostrar las zonas de El pueblo.</p>
+  </main>
+  <Footer />
+</body>
+</html>
+
+<style>
+  .simple-page {
+    width: min(980px, calc(100% - 2rem));
+    margin: 0 auto;
+    padding: 1.5rem 0 2rem;
+  }
+
+  .simple-page h1 {
+    margin: 0 0 0.8rem;
+  }
+</style>
