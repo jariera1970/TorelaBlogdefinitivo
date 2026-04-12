@@ -1,33 +1,100 @@
 ---
-import { getPosts } from '../../lib/strapi';
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
-import PostCard from '../../components/PostCard.astro';
 import Header from '../../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
-
-
-const allPosts = await getPosts();
-const posts = allPosts.filter((post: any) => post.Categoria === 'Asociacion' && post.Titulo);
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="es">
 <head>
 <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 </head>
 <body>
 <Header />
 <main>
-<section>
-<ul class="post-list">
-{posts.map((post: any) => (
-<PostCard post={post} />
-))}
-</ul>
-</section>
+	<section class="asociacion">
+		<h1>Asociación</h1>
+		<h2>Actividades y experiencia</h2>
+		<p>
+			La Asociación Cultural Torela, fundada en 1995, lleva casi 30 años volcada en la cultura y el
+			patrimonio en todos sus aspectos y expresiones.
+		</p>
+		<p>
+			Dispone de amplia experiencia en el ámbito social, divulgativo y cultural, transmitiendo cultura y
+			conocimientos a la sociedad, promoviendo el patrimonio, publicando libros y revistas, y conservando
+			las tradiciones y nuestras señas de identidad.
+		</p>
+
+		<h3>Nuestra Asociación</h3>
+		<p>Algunos de los fines de la Asociación Cultural Torela son:</p>
+		<ul>
+			<li>La promoción del patrimonio, la cultura y las tradiciones en todos sus aspectos o expresiones.</li>
+			<li>
+				El desarrollo completo de proyectos culturales, patrimoniales e históricos, desde la idea inicial
+				hasta la ejecución total.
+			</li>
+			<li>La edición y publicación de artículos, libros y revistas.</li>
+			<li>
+				La colaboración con otras asociaciones sin ánimo de lucro, con ayuntamientos y organismos oficiales
+				para el desarrollo de proyectos de interés colectivo.
+			</li>
+			<li>
+				La organización de charlas, encuentros y eventos, vinculados a potenciar el turismo, la historia y
+				el patrimonio.
+			</li>
+		</ul>
+
+		<h3>Actividades principales</h3>
+		<ul>
+			<li>Elaboración, diseño, edición y publicación de la Revista Torela.</li>
+			<li>Elaboración, búsqueda y redacción de contenidos, diseño, edición y publicación de revistas, artículos y libros.</li>
+			<li>Investigación, documentación y divulgación sobre temas históricos, culturales y de patrimonio.</li>
+			<li>Evento anual de recuperación de la Botarga.</li>
+			<li>Creación de un museo del esparto, recuperación de piezas y cursos de formación para mantener la tradición.</li>
+			<li>Organización y participación en los Encuentros de Primavera, edición anual.</li>
+		</ul>
+
+		<h3>Equipo</h3>
+		<p>
+			La Asociación Cultural Torela es una entidad sin ánimo de lucro, de carácter social, divulgativo y
+			cultural, fundada en 1995.
+		</p>
+		<p>
+			Disponemos de un amplio equipo de escritores, documentalistas, historiadores, informáticos,
+			fotógrafos y diseñadores que se involucran en cada proyecto e iniciativa para obtener el mayor impacto
+			y la satisfacción de la sociedad.
+		</p>
+	</section>
 </main>
 <Footer />
 </body>
 </html>
+
+<style>
+	.asociacion {
+		max-width: 820px;
+		margin: 0 auto;
+		padding: 2rem 1rem 3rem;
+		line-height: 1.7;
+	}
+
+	h1 {
+		margin-bottom: 1.2rem;
+	}
+
+	h2,
+	h3 {
+		margin-top: 1.6rem;
+		margin-bottom: 0.7rem;
+	}
+
+	ul {
+		padding-left: 1.3rem;
+	}
+
+	li {
+		margin-bottom: 0.5rem;
+	}
+</style>
 

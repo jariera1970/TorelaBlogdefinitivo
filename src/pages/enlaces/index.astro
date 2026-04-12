@@ -1,32 +1,171 @@
 ---
-import { getPosts } from '../../lib/strapi';
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
-import PostCard from '../../components/PostCard.astro';
 import Header from '../../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
-
-
-const allPosts = await getPosts();
-const posts = allPosts.filter((post: any) => post.Categoria === 'Enlaces' && post.Titulo);
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="es">
 <head>
 <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 </head>
 <body>
 <Header />
 <main>
-<section>
-<ul class="post-list">
-{posts.map((post: any) => (
-<PostCard post={post} />
-))}
-</ul>
-</section>
+	<section class="enlaces">
+		<header class="hero">
+			<p class="eyebrow">Recursos útiles</p>
+			<h1>Enlaces</h1>
+			<p class="intro">
+				Recopilación de páginas institucionales y medios de prensa para consultar información de interés.
+			</p>
+		</header>
+
+		<div class="cards-grid">
+			<article class="card">
+				<h2>Instituciones</h2>
+				<ul>
+					<li><a href="http://www.tortoladehenares.es/" target="_blank" rel="noopener noreferrer">www.tortoladehenares.es</a></li>
+					<li><a href="http://www.dguadalajara.es/" target="_blank" rel="noopener noreferrer">Diputación de Guadalajara</a></li>
+					<li><a href="https://www.jccm.es/" target="_blank" rel="noopener noreferrer">Junta de comunidades</a></li>
+					<li><a href="http://www.seg-social.es/" target="_blank" rel="noopener noreferrer">Seguridad Social</a></li>
+					<li><a href="http://www.guadalajara.es/" target="_blank" rel="noopener noreferrer">Ayuntamiento de Guadalajara</a></li>
+					<li><a href="http://europa.eu/index_es.htm" target="_blank" rel="noopener noreferrer">Unión Europea</a></li>
+					<li><a href="http://www.ffcm.es/" target="_blank" rel="noopener noreferrer">Federación de fútbol de Castilla-La Mancha</a></li>
+					<li><a href="http://www.dclm.es/" target="_blank" rel="noopener noreferrer">Diario de Castilla-La Mancha</a></li>
+				</ul>
+			</article>
+
+			<article class="card">
+				<h2>Prensa</h2>
+				<ul>
+					<li><a href="http://www.guadalajaradosmil.es/" target="_blank" rel="noopener noreferrer">Guadalajara 2000</a></li>
+					<li><a href="http://www.noticiasdigital.com/" target="_blank" rel="noopener noreferrer">Noticias digital</a></li>
+					<li><a href="http://www.lacronica.net/" target="_blank" rel="noopener noreferrer">La crónica de Guadalajara</a></li>
+					<li><a href="http://www.elmundo.es/" target="_blank" rel="noopener noreferrer">El Mundo</a></li>
+					<li><a href="http://www.elpais.es/" target="_blank" rel="noopener noreferrer">El País</a></li>
+					<li><a href="http://www.eldiaencastillalamancha.com/" target="_blank" rel="noopener noreferrer">El Día de Guadalajara</a></li>
+					<li><a href="http://www.publico.es/" target="_blank" rel="noopener noreferrer">Público</a></li>
+					<li><a href="http://www.elplural.com/" target="_blank" rel="noopener noreferrer">El Plural</a></li>
+					<li><a href="http://www.diariosigloxxi.com/" target="_blank" rel="noopener noreferrer">Diario Siglo XXI</a></li>
+				</ul>
+			</article>
+		</div>
+
+		<p class="link-extra">
+			<a href="http://www.juanjoseperez.jimdo.com/" target="_blank" rel="noopener noreferrer">
+				http://www.juanjoseperez.jimdo.com
+			</a>
+		</p>
+	</section>
 </main>
 <Footer />
 </body>
 </html>
+
+<style>
+	.enlaces {
+		max-width: 980px;
+		margin: 0 auto;
+		padding: 2.2rem 1rem 3.2rem;
+	}
+
+	.hero {
+		padding: 1.2rem 1.3rem;
+		margin-bottom: 1.2rem;
+		border: 1px solid #d8e2ea;
+		border-radius: 14px;
+		background: linear-gradient(120deg, #f7fbfe 0%, #eff6fb 100%);
+		box-shadow: 0 10px 20px -18px #5f7c9155;
+	}
+
+	.eyebrow {
+		margin: 0 0 0.3rem;
+		font-size: 0.8rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: #4f6676;
+	}
+
+	.intro {
+		margin: 0.4rem 0 0;
+		max-width: 64ch;
+		color: #31434f;
+	}
+
+	.cards-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		gap: 1rem;
+	}
+
+	.card {
+		padding: 1rem 1rem 1.1rem;
+		border: 1px solid #dde6ed;
+		border-radius: 12px;
+		background: #ffffff;
+		box-shadow: 0 12px 22px -20px #334a5a66;
+	}
+
+	h1 {
+		margin: 0;
+	}
+
+	h2 {
+		margin-top: 0;
+		margin-bottom: 0.6rem;
+	}
+
+	.card h2 {
+		font-size: clamp(2rem, 3vw, 2.8rem);
+		line-height: 1.08;
+		white-space: nowrap;
+		overflow-wrap: normal;
+		word-break: normal;
+	}
+
+	ul {
+		padding-left: 1.3rem;
+		margin: 0;
+	}
+
+	li {
+		margin-bottom: 0.45rem;
+	}
+
+	a {
+		color: #0e587f;
+		text-decoration-color: #7cb9da;
+		text-decoration-thickness: 1px;
+		text-underline-offset: 2px;
+		transition: color 0.2s ease, text-decoration-color 0.2s ease;
+	}
+
+	a:hover,
+	a:focus-visible {
+		color: #07334d;
+		text-decoration-color: #07334d;
+	}
+
+	.link-extra {
+		margin-top: 1.1rem;
+		padding-left: 0.2rem;
+		font-size: 0.95rem;
+	}
+
+	@media (max-width: 520px) {
+		.enlaces {
+			padding-top: 1.6rem;
+		}
+
+		.hero,
+		.card {
+			padding: 0.9rem;
+		}
+
+		.card h2 {
+			white-space: normal;
+		}
+	}
+</style>

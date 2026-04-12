@@ -12,22 +12,204 @@ import { SITE_TITLE } from '../../consts';
 </head>
 <body>
   <Header />
-  <main class="simple-page">
-    <h1>Fotos</h1>
-    <p>Sección en preparación para la galería de fotos de El pueblo.</p>
+  <main class="fotos-page">
+    <header class="hero">
+      <p class="eyebrow">El Pueblo</p>
+      <h1>Fotos</h1>
+      <p>Selección de imágenes de Tórtola de Henares extraídas de la guía turística y de sus festividades.</p>
+    </header>
+
+    <section>
+      <h2>Fiestas destacadas</h2>
+      <div class="gallery gallery-small">
+        <figure class="card">
+          <picture>
+            <source srcset="/images/el-pueblo/fiestas-mayo-cristo.webp" type="image/webp" />
+            <img src="/images/el-pueblo/fiestas-mayo-cristo.jpg" alt="Celebración del Cristo en mayo" loading="eager" decoding="async" />
+          </picture>
+          <figcaption>Fiestas de mayo - Cristo</figcaption>
+        </figure>
+        <figure class="card">
+          <picture>
+            <source srcset="/images/el-pueblo/fiestas-mayo-procesion.webp" type="image/webp" />
+            <img src="/images/el-pueblo/fiestas-mayo-procesion.jpg" alt="Procesión en las fiestas de mayo" loading="eager" decoding="async" />
+          </picture>
+          <figcaption>Fiestas de mayo - Procesión</figcaption>
+        </figure>
+        <figure class="card">
+          <picture>
+            <source srcset="/images/el-pueblo/fiestas-verano.webp" type="image/webp" />
+            <img src="/images/el-pueblo/fiestas-verano.jpg" alt="Actividades de verano" loading="lazy" decoding="async" />
+          </picture>
+          <figcaption>Fiestas de verano</figcaption>
+        </figure>
+        <figure class="card">
+          <picture>
+            <source srcset="/images/el-pueblo/santa-catalina.webp" type="image/webp" />
+            <img src="/images/el-pueblo/santa-catalina.jpg" alt="Imagen de Santa Catalina" loading="lazy" decoding="async" />
+          </picture>
+          <figcaption>Santa Catalina</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section>
+      <h2>Guía turística</h2>
+      <div class="gallery gallery-large">
+        <figure class="card">
+          <picture>
+            <source srcset="/images/el-pueblo/guia-p02.webp" type="image/webp" />
+            <img src="/images/el-pueblo/guia-p02.jpg" alt="Vista panorámica de Tórtola de Henares" loading="lazy" decoding="async" />
+          </picture>
+          <figcaption>Guía turística - página 2</figcaption>
+        </figure>
+        <figure class="card">
+          <picture>
+            <source srcset="/images/el-pueblo/guia-p04.webp" type="image/webp" />
+            <img src="/images/el-pueblo/guia-p04.jpg" alt="Iglesia de Tórtola de Henares" loading="lazy" decoding="async" />
+          </picture>
+          <figcaption>Monumentos - página 4</figcaption>
+        </figure>
+        <figure class="card">
+          <picture>
+            <source srcset="/images/el-pueblo/guia-p06.webp" type="image/webp" />
+            <img src="/images/el-pueblo/guia-p06.jpg" alt="Ermita y faro de referencia" loading="lazy" decoding="async" />
+          </picture>
+          <figcaption>Patrimonio - página 6</figcaption>
+        </figure>
+        <figure class="card">
+          <picture>
+            <source srcset="/images/el-pueblo/guia-p07.webp" type="image/webp" />
+            <img src="/images/el-pueblo/guia-p07.jpg" alt="Escultura y rincón histórico" loading="lazy" decoding="async" />
+          </picture>
+          <figcaption>Patrimonio - página 7</figcaption>
+        </figure>
+        <figure class="card">
+          <picture>
+            <source srcset="/images/el-pueblo/guia-p09.webp" type="image/webp" />
+            <img src="/images/el-pueblo/guia-p09.jpg" alt="Bodega tradicional" loading="lazy" decoding="async" />
+          </picture>
+          <figcaption>El vino - página 9</figcaption>
+        </figure>
+        <figure class="card">
+          <picture>
+            <source srcset="/images/el-pueblo/guia-p10.webp" type="image/webp" />
+            <img src="/images/el-pueblo/guia-p10.jpg" alt="Botarga tradicional" loading="lazy" decoding="async" />
+          </picture>
+          <figcaption>La Botarga - página 10</figcaption>
+        </figure>
+        <figure class="card">
+          <picture>
+            <source srcset="/images/el-pueblo/guia-p13.webp" type="image/webp" />
+            <img src="/images/el-pueblo/guia-p13.jpg" alt="Actos de fiestas de mayo" loading="lazy" decoding="async" />
+          </picture>
+          <figcaption>Festividades - página 13</figcaption>
+        </figure>
+        <figure class="card">
+          <picture>
+            <source srcset="/images/el-pueblo/guia-p14.webp" type="image/webp" />
+            <img src="/images/el-pueblo/guia-p14.jpg" alt="Encuentro de primavera" loading="lazy" decoding="async" />
+          </picture>
+          <figcaption>Fiesta de verano - página 14</figcaption>
+        </figure>
+        <figure class="card">
+          <picture>
+            <source srcset="/images/el-pueblo/guia-p15.webp" type="image/webp" />
+            <img src="/images/el-pueblo/guia-p15.jpg" alt="Imagen de la patrona" loading="lazy" decoding="async" />
+          </picture>
+          <figcaption>Santa Catalina - página 15</figcaption>
+        </figure>
+        <figure class="card">
+          <picture>
+            <source srcset="/images/el-pueblo/guia-p21.webp" type="image/webp" />
+            <img src="/images/el-pueblo/guia-p21.jpg" alt="Lugares y edificios de interés" loading="lazy" decoding="async" />
+          </picture>
+          <figcaption>Lugares de interés - página 21</figcaption>
+        </figure>
+      </div>
+    </section>
   </main>
   <Footer />
 </body>
 </html>
 
 <style>
-  .simple-page {
-    width: min(980px, calc(100% - 2rem));
+  .fotos-page {
+    width: min(1080px, calc(100% - 2rem));
     margin: 0 auto;
-    padding: 1.5rem 0 2rem;
+    padding: 1.5rem 0 2.4rem;
   }
 
-  .simple-page h1 {
-    margin: 0 0 0.8rem;
+  .hero {
+    margin-bottom: 1.3rem;
+    padding: 1.1rem 1.2rem;
+    border: 1px solid #d9e3ea;
+    border-radius: 14px;
+    background: linear-gradient(145deg, #f4f8fc 0%, #edf4f9 100%);
+  }
+
+  .eyebrow {
+    margin: 0 0 0.25rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #4f6676;
+  }
+
+  h1 {
+    margin: 0;
+  }
+
+  h2 {
+    margin: 1.2rem 0 0.75rem;
+  }
+
+  .hero p {
+    margin: 0.45rem 0 0;
+  }
+
+  .gallery {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .gallery-small {
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  }
+
+  .gallery-large {
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  }
+
+  .card {
+    margin: 0;
+    border: 1px solid #dde6ed;
+    border-radius: 12px;
+    background: #fff;
+    overflow: hidden;
+    box-shadow: 0 12px 24px -22px #2337468c;
+  }
+
+  .card img {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: #f0f4f7;
+  }
+
+  .card figcaption {
+    padding: 0.55rem 0.75rem 0.65rem;
+    font-size: 0.92rem;
+    color: #264053;
+  }
+
+  @media (max-width: 640px) {
+    .fotos-page {
+      padding-top: 1.1rem;
+    }
+
+    .hero {
+      padding: 0.9rem 1rem;
+    }
   }
 </style>
