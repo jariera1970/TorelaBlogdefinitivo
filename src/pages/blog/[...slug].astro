@@ -132,6 +132,16 @@ function getStrapiMediaInfo(media: any): { url: string | null; isVideo: boolean;
 	return { url, isVideo: isVideoByMime || isVideoByExt, isEmbed: false };
 }
 
+function getFirstPostImage(blocks: any[]): string | undefined {
+	for (const block of blocks ?? []) {
+		for (const media of [block?.Media1, block?.Media2]) {
+			const info = getStrapiMediaInfo(media);
+			if (info.url && !info.isVideo && !info.isEmbed) return info.url;
+		}
+	}
+	return undefined;
+}
+
 const slug = (Astro.params as { slug?: string }).slug;
 const posts = await getPosts();
 const post = posts.find((p: any) => uniquePostSlug(p) === slug)
@@ -142,6 +152,7 @@ if (!post) {
 }
 
 const title = post.Titulo;
+const socialImage = getFirstPostImage(post.blocks ?? []);
 
 const markdownProcessor = await createMarkdownProcessor({
 	gfm: true,
@@ -166,7 +177,7 @@ const renderedBlocks = await Promise.all(
 <!doctype html>
 <html lang="en">
 	<head>
-		<BaseHead title={`${title} | ${SITE_TITLE}`} description={post.Categoria} />
+		<BaseHead title={`${title} | ${SITE_TITLE}`} description={post.Categoria} image={socialImage} />
 	</head>
 	<body>
 		<Header />
