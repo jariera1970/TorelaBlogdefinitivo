@@ -1,5 +1,6 @@
 ---
 import { getPosts, toAbsoluteStrapiUrl } from '../../lib/strapi';
+import { createMarkdownProcessor } from '@astrojs/markdown-remark';
 import BaseHead from '../../components/BaseHead.astro';
 
 import Header from '../../components/Header.astro';
@@ -141,6 +142,25 @@ if (!post) {
 }
 
 const title = post.Titulo;
+
+const markdownProcessor = await createMarkdownProcessor({
+	gfm: true,
+	smartypants: false
+});
+
+async function renderRichText(value: unknown): Promise<string> {
+	if (typeof value !== 'string' || !value.trim()) return '';
+	const rendered = await markdownProcessor.render(value);
+	return rendered.code;
+}
+
+const renderedBlocks = await Promise.all(
+	(post.blocks ?? []).map(async (block: any) => ({
+		block,
+		cuerpo1Html: await renderRichText(block.Cuerpo1),
+		cuerpo2Html: await renderRichText(block.Cuerpo2)
+	}))
+);
 ---
 
 <!doctype html>
@@ -164,13 +184,13 @@ const title = post.Titulo;
 					</div>
 				)}
 
-				{post.blocks?.map((block: any) => {
+				{renderedBlocks.map(({ block, cuerpo1Html, cuerpo2Html }) => {
 					const media1 = getStrapiMediaInfo(block.Media1);
 					const media2 = getStrapiMediaInfo(block.Media2);
 					return (
 						<section class="block">
-							{block.Cuerpo1 && (
-								<p>{block.Cuerpo1}</p>
+							{cuerpo1Html && (
+								<div class="richtext" set:html={cuerpo1Html} />
 							)}
 
 							{media1.url && (
@@ -181,8 +201,8 @@ const title = post.Titulo;
 									: <img src={media1.url} alt={title} class="block-media" />
 							)}
 
-							{block.Cuerpo2 && (
-								<p>{block.Cuerpo2}</p>
+							{cuerpo2Html && (
+								<div class="richtext" set:html={cuerpo2Html} />
 							)}
 
 							{media2.url && (
@@ -241,9 +261,46 @@ const title = post.Titulo;
 	.block {
 		margin-bottom: 2rem;
 	}
-	.block p {
+	:global(.richtext p) {
 		margin-bottom: 1rem;
 		color: #333;
+	}
+	:global(.richtext a) {
+		color: #0066cc;
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+	:global(.richtext strong) {
+		font-weight: 700;
+	}
+	:global(.richtext em) {
+		font-style: italic;
+	}
+	:global(.richtext s) {
+		text-decoration: line-through;
+	}
+	:global(.richtext ul),
+	:global(.richtext ol) {
+		margin: 1rem 0 1rem 2rem;
+		padding-left: 1rem;
+	}
+	:global(.richtext li) {
+		margin-bottom: 0.4rem;
+	}
+	:global(.richtext blockquote) {
+		margin: 1.25rem 0;
+		padding-left: 1rem;
+		border-left: 4px solid #d0d0d0;
+		color: #555;
+	}
+	:global(.richtext h2),
+	:global(.richtext h3),
+	:global(.richtext h4),
+	:global(.richtext h5),
+	:global(.richtext h6) {
+		margin: 1.5rem 0 0.75rem;
+		line-height: 1.3;
+		color: #1a1a1a;
 	}
 	.block-media {
 		max-width: 100%;
